@@ -15,32 +15,37 @@ const AboutSection = () => {
     {
       icon: Coffee,
       title: "Browse Menus",
-      description: "Quick and simple food ordering from multiple campus outlets."
+      description: "Quick and simple food ordering from multiple campus outlets.",
+      image: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
     },
     {
       icon: Smartphone,
       title: "Order & Pay Easy Ordering",
-      description: "Streamlined process for placing and paying for orders."
+      description: "Streamlined process for placing and paying for orders.",
+      image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
     },
     {
       icon: Clock,
       title: "Fast Service",
-      description: "Skip the lines with our efficient order processing system."
+      description: "Skip the lines with our efficient order processing system.",
+      image: "https://images.unsplash.com/photo-1521791136064-7986c2920216?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
     },
     {
       icon: Users,
       title: "Mobile Friendly",
-      description: "Order from anywhere on campus using your phone."
+      description: "Order from anywhere on campus using your phone.",
+      image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
     },
     {
       icon: QrCode,
       title: "Pickup via QR",
-      description: "Secure and quick order validation and pickup using QR codes or OTP."
+      description: "Secure and quick order validation and pickup using QR codes or OTP.",
+      image: "https://images.unsplash.com/photo-1434626881859-194d67b2b86f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
     }
   ];
 
   return (
-    <section id="about" className="py-20 bg-gradient-to-br from-blue-50 to-blue-100" ref={ref}>
+    <section id="about" className="py-20 bg-gradient-to-br from-blue-50 via-white to-green-50" ref={ref}>
       <div className="container mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
           {/* Text Content */}
@@ -50,8 +55,8 @@ const AboutSection = () => {
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
-              Redefining <span className="text-blue-600">Cafeteria</span> Convenience
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+              Redefining <span className="text-blue-600">Cafeteria</span> <span className="text-green-600">Convenience</span>
             </h2>
             
             <p className="text-lg text-gray-600 leading-relaxed" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
@@ -80,9 +85,9 @@ const AboutSection = () => {
               />
             </div>
             
-            {/* Floating elements with blue theme */}
+            {/* Enhanced floating elements with mixed colors */}
             <motion.div
-              className="absolute -top-4 -right-4 w-16 h-16 bg-blue-500 rounded-full opacity-20"
+              className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-r from-blue-500 to-green-500 rounded-full opacity-20"
               animate={{ 
                 y: [0, -15, 0],
                 rotate: [0, 180, 360]
@@ -95,13 +100,27 @@ const AboutSection = () => {
             />
             
             <motion.div
-              className="absolute -bottom-4 -left-4 w-12 h-12 bg-blue-700 rounded-full opacity-25"
+              className="absolute -bottom-4 -left-4 w-12 h-12 bg-gradient-to-r from-green-500 to-blue-700 rounded-full opacity-25"
               animate={{ 
                 y: [0, 15, 0],
                 scale: [1, 1.1, 1]
               }}
               transition={{ 
                 duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+
+            <motion.div
+              className="absolute top-1/4 -left-6 w-8 h-8 bg-green-400 rounded-full opacity-30"
+              animate={{ 
+                x: [0, 10, 0],
+                y: [0, -10, 0],
+                rotate: [0, 180, 360]
+              }}
+              transition={{ 
+                duration: 6,
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
@@ -116,11 +135,11 @@ const AboutSection = () => {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 0.5 }}
         >
-          <h3 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
-            Why choose us?
+          <h3 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+            Why choose <span className="text-green-600">us</span>?
           </h3>
           <h4 className="text-2xl font-semibold text-blue-600 mb-8" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-            How It Works – Fast. Simple. Delicious.
+            How It Works – <span className="text-green-600">Fast</span>. Simple. Delicious.
           </h4>
         </motion.div>
         

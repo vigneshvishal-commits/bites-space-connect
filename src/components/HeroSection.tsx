@@ -7,11 +7,11 @@ const HeroSection = () => {
   return (
     <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Enhanced Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-blue-400/10" />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-white/50 to-green-400/10" />
       
-      {/* Additional animated background elements */}
+      {/* Enhanced animated background elements */}
       <motion.div
-        className="absolute top-10 left-10 w-32 h-32 bg-blue-500/10 rounded-full"
+        className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-r from-blue-500/10 to-green-500/10 rounded-full"
         animate={{ 
           scale: [1, 1.2, 1],
           rotate: [0, 180, 360],
@@ -25,7 +25,7 @@ const HeroSection = () => {
       />
       
       <motion.div
-        className="absolute top-1/3 right-20 w-24 h-24 bg-blue-600/15 rounded-full"
+        className="absolute top-1/3 right-20 w-24 h-24 bg-gradient-to-r from-blue-600/15 to-green-600/15 rounded-full"
         animate={{ 
           y: [0, -30, 0],
           x: [0, 20, 0],
@@ -39,13 +39,41 @@ const HeroSection = () => {
       />
       
       <motion.div
-        className="absolute bottom-20 left-1/4 w-16 h-16 bg-green-500/20 rounded-full"
+        className="absolute bottom-20 left-1/4 w-16 h-16 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-full"
         animate={{ 
           rotate: [0, -180, -360],
           scale: [1, 1.3, 1]
         }}
         transition={{ 
           duration: 10,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
+
+      <motion.div
+        className="absolute top-20 right-1/3 w-20 h-20 bg-green-400/15 rounded-full"
+        animate={{ 
+          y: [0, 25, 0],
+          x: [0, -15, 0],
+          rotate: [0, 90, 180, 270, 360]
+        }}
+        transition={{ 
+          duration: 12,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
+
+      <motion.div
+        className="absolute bottom-1/3 right-10 w-14 h-14 bg-blue-400/20 rounded-full"
+        animate={{ 
+          scale: [1, 1.4, 1],
+          opacity: [0.2, 0.5, 0.2],
+          rotate: [360, 0]
+        }}
+        transition={{ 
+          duration: 7,
           repeat: Infinity,
           ease: "easeInOut"
         }}
@@ -68,7 +96,7 @@ const HeroSection = () => {
               transition={{ delay: 0.2, duration: 0.8 }}
             >
               <span className="text-blue-600">Hungry?</span>{' '}
-              <span className="text-blue-800">Tired</span> in queues?
+              <span className="text-green-600">Tired</span> in queues?
             </motion.h1>
             
             <motion.p
@@ -78,11 +106,11 @@ const HeroSection = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.8 }}
             >
-              Redefining Cafeteria Convenience. Bites Space is not just a digital menu—it's your smart food partner. Designed for modern offices, our platform connects you to your favorite cafeteria stalls, streamlines orders, and eliminates the hassle of queues.
+              Redefining <span className="text-green-600 font-semibold">Cafeteria Convenience</span>. Bites Space is not just a digital menu—it's your smart food partner. Designed for modern offices, our platform connects you to your favorite cafeteria stalls, streamlines orders, and eliminates the hassle of queues.
             </motion.p>
             
             <motion.button
-              className="group relative px-8 py-4 bg-blue-600 text-white rounded-full font-semibold text-lg overflow-hidden shadow-xl transition-all duration-300 flex items-center space-x-2"
+              className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 via-blue-700 to-green-600 text-white rounded-full font-semibold text-lg overflow-hidden shadow-xl transition-all duration-300 flex items-center space-x-2"
               style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -97,7 +125,7 @@ const HeroSection = () => {
             >
               {/* Background animation on hover */}
               <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-500"
+                className="absolute inset-0 bg-gradient-to-r from-green-600 via-blue-700 to-green-500"
                 initial={{ x: '-100%' }}
                 whileHover={{ x: 0 }}
                 transition={{ duration: 0.3 }}
@@ -106,9 +134,9 @@ const HeroSection = () => {
               <span className="relative z-10">Order Now</span>
               <ArrowRight className="relative z-10 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
               
-              {/* Pulse effect */}
+              {/* Enhanced pulse effect */}
               <motion.div
-                className="absolute inset-0 bg-blue-400 rounded-full opacity-30"
+                className="absolute inset-0 bg-gradient-to-r from-blue-400 to-green-400 rounded-full opacity-30"
                 animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0, 0.3] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
@@ -132,9 +160,9 @@ const HeroSection = () => {
               />
             </div>
             
-            {/* Enhanced Floating Elements */}
+            {/* Enhanced Floating Elements with mixed colors */}
             <motion.div
-              className="absolute -top-4 -left-4 w-20 h-20 bg-blue-500 rounded-full opacity-20"
+              className="absolute -top-4 -left-4 w-20 h-20 bg-gradient-to-r from-blue-500 to-green-500 rounded-full opacity-20"
               animate={{ 
                 y: [0, -20, 0],
                 rotate: [0, 180, 360],
@@ -148,7 +176,7 @@ const HeroSection = () => {
             />
             
             <motion.div
-              className="absolute -bottom-4 -right-4 w-16 h-16 bg-blue-700 rounded-full opacity-20"
+              className="absolute -bottom-4 -right-4 w-16 h-16 bg-gradient-to-r from-green-500 to-blue-700 rounded-full opacity-20"
               animate={{ 
                 y: [0, 20, 0],
                 rotate: [360, 180, 0],
@@ -162,13 +190,27 @@ const HeroSection = () => {
             />
             
             <motion.div
-              className="absolute top-1/2 -left-8 w-12 h-12 bg-green-500 rounded-full opacity-25"
+              className="absolute top-1/2 -left-8 w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-full opacity-25"
               animate={{ 
                 x: [0, 15, 0],
                 rotate: [0, 360, 0]
               }}
               transition={{ 
                 duration: 5,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+
+            <motion.div
+              className="absolute top-1/4 right-4 w-10 h-10 bg-blue-400 rounded-full opacity-30"
+              animate={{ 
+                y: [0, -12, 0],
+                x: [0, 8, 0],
+                scale: [1, 1.15, 1]
+              }}
+              transition={{ 
+                duration: 8,
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
