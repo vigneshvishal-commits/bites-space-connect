@@ -33,7 +33,7 @@ const StallsSection = () => {
   ];
 
   return (
-    <section id="stalls" className="py-20 bg-gradient-to-br from-blue-50 to-green-50" ref={ref}>
+    <section id="stalls" className="py-20 bg-gradient-to-br from-blue-50 to-blue-100" ref={ref}>
       <div className="container mx-auto px-4">
         <motion.div
           className="text-center mb-16"
@@ -41,10 +41,10 @@ const StallsSection = () => {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
         >
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-4">
-            Our <span className="text-green-500">Food Stalls</span>
+          <h2 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+            Our <span className="text-blue-600">Food Stalls</span>
           </h2>
-          <p className="text-xl text-gray-600">Discover amazing flavors from our partner stalls</p>
+          <p className="text-xl text-gray-600" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Discover amazing flavors from our partner stalls</p>
         </motion.div>
         
         {/* Animated Marquee */}
@@ -64,11 +64,12 @@ const StallsSection = () => {
             {stalls.map((stall, index) => (
               <motion.div
                 key={`first-${index}`}
-                className="flex-shrink-0 w-80 bg-white rounded-3xl shadow-xl overflow-hidden group cursor-pointer"
+                className="flex-shrink-0 w-80 bg-white rounded-3xl shadow-xl overflow-hidden group cursor-pointer border border-blue-200"
                 whileHover={{ 
                   scale: 1.05,
                   y: -10,
-                  boxShadow: "0 25px 50px rgba(0,0,0,0.15)"
+                  boxShadow: "0 25px 50px rgba(37, 99, 235, 0.2)",
+                  borderColor: "#2563eb"
                 }}
                 transition={{ duration: 0.3 }}
               >
@@ -80,25 +81,17 @@ const StallsSection = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   <div className="absolute bottom-4 left-4 text-white">
-                    <span className="text-sm font-medium bg-green-500 px-3 py-1 rounded-full">
+                    <span className="text-sm font-medium bg-blue-600 px-3 py-1 rounded-full" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                       {stall.specialty}
                     </span>
                   </div>
                 </div>
                 
                 <div className="p-6">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors duration-300">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors duration-300" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                     {stall.name}
                   </h3>
-                  <p className="text-gray-600">Fresh, quality ingredients delivered daily</p>
-                  
-                  <motion.button
-                    className="mt-4 w-full py-3 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-xl font-semibold hover:from-green-600 hover:to-blue-700 transition-all duration-300"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    View Menu
-                  </motion.button>
+                  <p className="text-gray-600" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Fresh, quality ingredients delivered daily</p>
                 </div>
               </motion.div>
             ))}
@@ -107,11 +100,12 @@ const StallsSection = () => {
             {stalls.map((stall, index) => (
               <motion.div
                 key={`second-${index}`}
-                className="flex-shrink-0 w-80 bg-white rounded-3xl shadow-xl overflow-hidden group cursor-pointer"
+                className="flex-shrink-0 w-80 bg-white rounded-3xl shadow-xl overflow-hidden group cursor-pointer border border-blue-200"
                 whileHover={{ 
                   scale: 1.05,
                   y: -10,
-                  boxShadow: "0 25px 50px rgba(0,0,0,0.15)"
+                  boxShadow: "0 25px 50px rgba(37, 99, 235, 0.2)",
+                  borderColor: "#2563eb"
                 }}
                 transition={{ duration: 0.3 }}
               >
@@ -123,25 +117,17 @@ const StallsSection = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   <div className="absolute bottom-4 left-4 text-white">
-                    <span className="text-sm font-medium bg-green-500 px-3 py-1 rounded-full">
+                    <span className="text-sm font-medium bg-blue-600 px-3 py-1 rounded-full" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                       {stall.specialty}
                     </span>
                   </div>
                 </div>
                 
                 <div className="p-6">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors duration-300">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors duration-300" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                     {stall.name}
                   </h3>
-                  <p className="text-gray-600">Fresh, quality ingredients delivered daily</p>
-                  
-                  <motion.button
-                    className="mt-4 w-full py-3 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-xl font-semibold hover:from-green-600 hover:to-blue-700 transition-all duration-300"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    View Menu
-                  </motion.button>
+                  <p className="text-gray-600" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Fresh, quality ingredients delivered daily</p>
                 </div>
               </motion.div>
             ))}
