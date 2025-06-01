@@ -72,8 +72,8 @@ const AboutSection = () => {
           >
             <div className="relative z-10">
               <motion.img
-                src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                alt="Office employees enjoying food together in cafeteria"
+                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                alt="Office employees eating together in cafeteria"
                 className="w-full h-[400px] object-cover rounded-3xl shadow-2xl"
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}

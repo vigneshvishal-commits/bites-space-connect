@@ -124,8 +124,8 @@ const HeroSection = () => {
           >
             <div className="relative z-10">
               <motion.img
-                src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                alt="Delicious food platter with variety of dishes"
+                src="https://images.unsplash.com/photo-1493770348161-369560ae357d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                alt="Delicious platter of food with variety of dishes"
                 className="w-full h-[500px] object-cover rounded-3xl shadow-2xl"
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
