@@ -95,7 +95,8 @@ const HeroSection = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
             >
-              Your office cafeteria, <span className="text-green-600">revolutionized.</span>
+              Feeling <span className="text-blue-600">hungry?</span> <br />
+              Hustle in <span className="text-green-600">Queues?</span>
             </motion.h1>
             
             <motion.p
@@ -105,7 +106,7 @@ const HeroSection = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.8 }}
             >
-              Bites Space brings convenience to your fingertips, connecting you with your favorite stalls and making order management seamless. <span className="text-green-600 font-semibold">Eat smart, skip the wait.</span>
+              Explore foods and order now! Bites Space brings convenience to your fingertips, connecting you with your favorite stalls and making order management seamless. <span className="text-green-600 font-semibold">Eat smart, skip the wait.</span>
             </motion.p>
             
             <motion.button

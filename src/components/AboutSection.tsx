@@ -153,8 +153,8 @@ const AboutSection = () => {
                 transition={{ duration: 0.3 }}
               >
                 <img
-                  src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Office employees eating together in cafeteria with laptops and food"
+                  src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Office employees working with laptops and food in a modern cafeteria setting"
                   className="w-full h-[400px] object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
@@ -197,7 +197,7 @@ const AboutSection = () => {
             transition={{ duration: 0.8, delay: 0.3 }}
           >
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-              Redefining <span className="text-blue-600">Cafeteria</span> <span className="text-green-600">Convenience</span>
+              Your office <span className="text-blue-600">cafeteria,</span> <span className="text-green-600">revolutionized.</span>
             </h2>
             
             <p className="text-lg text-gray-600 leading-relaxed" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>

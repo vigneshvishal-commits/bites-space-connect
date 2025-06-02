@@ -49,15 +49,15 @@ const Header = () => {
     >
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo - Prominent and Big */}
+          {/* Logo - Made Even Bigger */}
           <motion.div
             className="flex items-center space-x-2"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            <div className="w-16 h-16 flex items-center justify-center">
+            <div className="w-24 h-24 flex items-center justify-center">
               <img 
-                src="/lovable-uploads/9bfd3b17-e63e-4963-bfd6-2d7ea3c88352.png" 
+                src="/lovable-uploads/b3787bd3-143a-4cb2-9fdf-8228781e5bf4.png" 
                 alt="Bites Space Logo" 
                 className="w-full h-full object-contain"
                 style={{ background: 'transparent' }}
