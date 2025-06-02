@@ -55,12 +55,13 @@ const Header = () => {
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 via-blue-700 to-green-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>BS</span>
+            <div className="w-12 h-12 flex items-center justify-center">
+              <img 
+                src="/lovable-uploads/9bfd3b17-e63e-4963-bfd6-2d7ea3c88352.png" 
+                alt="Bites Space Logo" 
+                className="w-full h-full object-contain"
+              />
             </div>
-            <span className="text-2xl font-bold text-gray-800" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-              Bites <span className="text-green-600">Space</span>
-            </span>
           </motion.div>
 
           {/* Navigation */}

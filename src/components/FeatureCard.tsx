@@ -21,8 +21,8 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, descriptio
       }}
       transition={{ duration: 0.3, type: "spring", stiffness: 400, damping: 10 }}
     >
-      {/* Background Image */}
-      <div className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity duration-300">
+      {/* Background Image with increased transparency */}
+      <div className="absolute inset-0 opacity-3 group-hover:opacity-8 transition-opacity duration-300">
         <img 
           src={image} 
           alt="" 
@@ -33,10 +33,10 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, descriptio
       {/* Content */}
       <div className="relative z-10">
         <motion.div
-          className="w-16 h-16 bg-gradient-to-r from-blue-600 via-blue-700 to-green-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300"
+          className="w-20 h-20 bg-gradient-to-r from-blue-600 via-blue-700 to-green-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300"
           whileHover={{ rotate: 5 }}
         >
-          <Icon className="w-8 h-8 text-white" />
+          <Icon className="w-10 h-10 text-white" />
         </motion.div>
         
         <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors duration-300" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>

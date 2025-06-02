@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { Coffee, Smartphone, Clock, Users, QrCode } from 'lucide-react';
+import { Smartphone, Zap, Clock, Users, QrCode } from 'lucide-react';
 import FeatureCard from './FeatureCard';
 
 const AboutSection = () => {
@@ -13,14 +13,14 @@ const AboutSection = () => {
 
   const features = [
     {
-      icon: Coffee,
+      icon: Smartphone,
       title: "Browse Menus",
       description: "Quick and simple food ordering from multiple campus outlets.",
-      image: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+      image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
     },
     {
-      icon: Smartphone,
-      title: "Order & Pay Easy Ordering",
+      icon: Zap,
+      title: "Order & Pay Easy",
       description: "Streamlined process for placing and paying for orders.",
       image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
     },
@@ -34,7 +34,7 @@ const AboutSection = () => {
       icon: Users,
       title: "Mobile Friendly",
       description: "Order from anywhere on campus using your phone.",
-      image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
     },
     {
       icon: QrCode,
@@ -45,44 +45,74 @@ const AboutSection = () => {
   ];
 
   return (
-    <section id="about" className="py-20 bg-gradient-to-br from-blue-50 via-white to-green-50" ref={ref}>
-      <div className="container mx-auto px-4">
+    <section id="about" className="py-20 bg-gradient-to-br from-blue-50 via-white to-green-50 relative overflow-hidden" ref={ref}>
+      {/* Background Animations */}
+      <motion.div
+        className="absolute top-20 left-20 w-24 h-24 bg-gradient-to-r from-blue-500/10 to-green-500/10 rounded-full"
+        animate={{ 
+          scale: [1, 1.3, 1],
+          rotate: [0, 180, 360],
+          opacity: [0.2, 0.5, 0.2]
+        }}
+        transition={{ 
+          duration: 10,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
+      
+      <motion.div
+        className="absolute bottom-32 right-16 w-32 h-32 bg-gradient-to-r from-green-400/15 to-blue-400/15 rounded-full"
+        animate={{ 
+          y: [0, -25, 0],
+          x: [0, 15, 0],
+          scale: [1, 1.2, 1]
+        }}
+        transition={{ 
+          duration: 8,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
+
+      <motion.div
+        className="absolute top-1/3 right-32 w-16 h-16 bg-blue-500/20 rounded-full"
+        animate={{ 
+          rotate: [0, 360],
+          scale: [1, 1.4, 1]
+        }}
+        transition={{ 
+          duration: 12,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
+
+      <div className="container mx-auto px-4 relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
-          {/* Text Content */}
+          {/* Office Cafeteria Image */}
           <motion.div
-            className="space-y-6"
+            className="relative order-2 lg:order-1"
             initial={{ opacity: 0, x: -50 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-              Redefining <span className="text-blue-600">Cafeteria</span> <span className="text-green-600">Convenience</span>
-            </h2>
-            
-            <p className="text-lg text-gray-600 leading-relaxed" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-              Bites Space is not just a digital menu—it's your smart food partner. Designed for modern offices, our platform connects you to your favorite cafeteria stalls, streamlines orders, and eliminates the hassle of queues.
-            </p>
-            
-            <p className="text-lg text-gray-600 leading-relaxed" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-              As an initiative for modern organizations, much like Cognizant's commitment to innovation and employee well-being, Bites Space is built to enhance the daily cafeteria experience. We centralize menu browse, order placement, and secure payments, reducing wait times and providing a seamless, efficient food management ecosystem for everyone.
-            </p>
-          </motion.div>
-          
-          {/* Office Cafeteria Image */}
-          <motion.div
-            className="relative"
-            initial={{ opacity: 0, x: 50 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
             <div className="relative z-10">
-              <motion.img
-                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                alt="Office employees eating together in cafeteria"
-                className="w-full h-[400px] object-cover rounded-3xl shadow-2xl"
+              <motion.div
+                className="relative overflow-hidden"
+                style={{
+                  clipPath: "polygon(0% 0%, 80% 0%, 100% 100%, 20% 100%)",
+                  borderRadius: "20px"
+                }}
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
-              />
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Office employees with laptops and food at cafeteria table"
+                  className="w-full h-[400px] object-cover"
+                />
+              </motion.div>
             </div>
             
             {/* Enhanced floating elements with mixed colors */}
@@ -125,6 +155,26 @@ const AboutSection = () => {
                 ease: "easeInOut"
               }}
             />
+          </motion.div>
+
+          {/* Text Content */}
+          <motion.div
+            className="space-y-6 order-1 lg:order-2"
+            initial={{ opacity: 0, x: 50 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+              Redefining <span className="text-blue-600">Cafeteria</span> <span className="text-green-600">Convenience</span>
+            </h2>
+            
+            <p className="text-lg text-gray-600 leading-relaxed" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+              Bites Space is designed as your <span className="text-green-600 font-semibold">smart food partner</span> for modern offices. Inspired by organizational commitments to efficiency and well-being, our platform centralizes menus, streamlines order placement, and ensures secure payments.
+            </p>
+            
+            <p className="text-lg text-gray-600 leading-relaxed" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+              Enhance your daily cafeteria experience: <span className="text-blue-600 font-semibold">browse, order, pay, and pickup with ease</span>
+            </p>
           </motion.div>
         </div>
         

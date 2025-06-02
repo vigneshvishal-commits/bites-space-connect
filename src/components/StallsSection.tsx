@@ -47,17 +47,18 @@ const StallsSection = () => {
           <p className="text-xl text-gray-600" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Discover amazing flavors from our partner stalls</p>
         </motion.div>
         
-        {/* Animated Marquee */}
+        {/* Fixed Marquee Animation */}
         <div className="relative overflow-hidden">
           <motion.div
             className="flex space-x-8"
             animate={{
-              x: [0, -1920]
+              x: [0, -320 * stalls.length]
             }}
             transition={{
-              duration: 20,
+              duration: 15,
               repeat: Infinity,
-              ease: "linear"
+              ease: "linear",
+              repeatType: "loop"
             }}
           >
             {/* First set */}
@@ -96,7 +97,7 @@ const StallsSection = () => {
               </motion.div>
             ))}
             
-            {/* Duplicate set for seamless loop */}
+            {/* Second set for seamless loop */}
             {stalls.map((stall, index) => (
               <motion.div
                 key={`second-${index}`}

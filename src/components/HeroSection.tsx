@@ -95,8 +95,8 @@ const HeroSection = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
             >
-              <span className="text-blue-600">Hungry?</span>{' '}
-              <span className="text-green-600">Tired</span> in queues?
+              <span className="text-blue-600">Your office cafeteria,</span>{' '}
+              <span className="text-green-600">revolutionized.</span>
             </motion.h1>
             
             <motion.p
@@ -106,7 +106,7 @@ const HeroSection = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.8 }}
             >
-              Redefining <span className="text-green-600 font-semibold">Cafeteria Convenience</span>. Bites Space is not just a digital menu—it's your smart food partner. Designed for modern offices, our platform connects you to your favorite cafeteria stalls, streamlines orders, and eliminates the hassle of queues.
+              Bites Space brings convenience to your fingertips, connecting you with your favorite stalls and making order management seamless. <span className="text-green-600 font-semibold">Eat smart, skip the wait.</span>
             </motion.p>
             
             <motion.button
@@ -143,7 +143,7 @@ const HeroSection = () => {
             </motion.button>
           </motion.div>
           
-          {/* Hero Image - Platter of Food */}
+          {/* Hero Image - Multi-cuisine Food */}
           <motion.div
             className="relative"
             initial={{ opacity: 0, x: 50 }}
@@ -151,13 +151,21 @@ const HeroSection = () => {
             transition={{ duration: 0.8, delay: 0.3 }}
           >
             <div className="relative z-10">
-              <motion.img
-                src="https://images.unsplash.com/photo-1493770348161-369560ae357d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                alt="Delicious platter of food with variety of dishes"
-                className="w-full h-[500px] object-cover rounded-3xl shadow-2xl"
+              <motion.div
+                className="relative overflow-hidden"
+                style={{
+                  clipPath: "polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%)",
+                  borderRadius: "20px"
+                }}
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
-              />
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Variety of international cuisines and dishes"
+                  className="w-full h-[500px] object-cover"
+                />
+              </motion.div>
             </div>
             
             {/* Enhanced Floating Elements with mixed colors */}
