@@ -95,8 +95,7 @@ const HeroSection = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
             >
-              <span className="text-blue-600">Your office cafeteria,</span>{' '}
-              <span className="text-green-600">revolutionized.</span>
+              Your office cafeteria, <span className="text-green-600">revolutionized.</span>
             </motion.h1>
             
             <motion.p
@@ -143,7 +142,7 @@ const HeroSection = () => {
             </motion.button>
           </motion.div>
           
-          {/* Hero Image - Multi-cuisine Food */}
+          {/* Hero Image - Multi-cuisine Food with Organic Shape */}
           <motion.div
             className="relative"
             initial={{ opacity: 0, x: 50 }}
@@ -151,26 +150,44 @@ const HeroSection = () => {
             transition={{ duration: 0.8, delay: 0.3 }}
           >
             <div className="relative z-10">
+              {/* Organic blob background */}
               <motion.div
-                className="relative overflow-hidden"
+                className="absolute inset-0 bg-gradient-to-br from-blue-400/20 via-green-400/15 to-blue-500/20 rounded-[50px] transform rotate-6"
                 style={{
-                  clipPath: "polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%)",
-                  borderRadius: "20px"
+                  clipPath: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)"
+                }}
+                animate={{ 
+                  rotate: [6, -3, 6],
+                  scale: [1, 1.02, 1]
+                }}
+                transition={{ 
+                  duration: 8,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+              
+              {/* Floating image container */}
+              <motion.div
+                className="relative overflow-hidden rounded-[40px] shadow-2xl"
+                style={{
+                  clipPath: "polygon(20% 0%, 90% 5%, 95% 85%, 75% 100%, 5% 95%, 0% 15%)"
                 }}
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
               >
                 <img
-                  src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Variety of international cuisines and dishes"
+                  src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Multi-cuisine food platter with variety of dishes"
                   className="w-full h-[500px] object-cover"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
               </motion.div>
             </div>
             
-            {/* Enhanced Floating Elements with mixed colors */}
+            {/* Enhanced Floating Elements */}
             <motion.div
-              className="absolute -top-4 -left-4 w-20 h-20 bg-gradient-to-r from-blue-500 to-green-500 rounded-full opacity-20"
+              className="absolute -top-4 -left-4 w-20 h-20 bg-gradient-to-r from-green-500/30 to-blue-500/30 rounded-full blur-sm"
               animate={{ 
                 y: [0, -20, 0],
                 rotate: [0, 180, 360],
@@ -184,7 +201,7 @@ const HeroSection = () => {
             />
             
             <motion.div
-              className="absolute -bottom-4 -right-4 w-16 h-16 bg-gradient-to-r from-green-500 to-blue-700 rounded-full opacity-20"
+              className="absolute -bottom-6 -right-6 w-16 h-16 bg-gradient-to-r from-blue-500/30 to-green-700/30 rounded-full blur-sm"
               animate={{ 
                 y: [0, 20, 0],
                 rotate: [360, 180, 0],
@@ -192,33 +209,6 @@ const HeroSection = () => {
               }}
               transition={{ 
                 duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
-            
-            <motion.div
-              className="absolute top-1/2 -left-8 w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-full opacity-25"
-              animate={{ 
-                x: [0, 15, 0],
-                rotate: [0, 360, 0]
-              }}
-              transition={{ 
-                duration: 5,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
-
-            <motion.div
-              className="absolute top-1/4 right-4 w-10 h-10 bg-blue-400 rounded-full opacity-30"
-              animate={{ 
-                y: [0, -12, 0],
-                x: [0, 8, 0],
-                scale: [1, 1.15, 1]
-              }}
-              transition={{ 
-                duration: 8,
                 repeat: Infinity,
                 ease: "easeInOut"
               }}

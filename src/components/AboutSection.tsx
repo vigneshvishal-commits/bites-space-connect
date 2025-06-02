@@ -46,7 +46,7 @@ const AboutSection = () => {
 
   return (
     <section id="about" className="py-20 bg-gradient-to-br from-blue-50 via-white to-green-50 relative overflow-hidden" ref={ref}>
-      {/* Background Animations */}
+      {/* Enhanced Background Animations */}
       <motion.div
         className="absolute top-20 left-20 w-24 h-24 bg-gradient-to-r from-blue-500/10 to-green-500/10 rounded-full"
         animate={{ 
@@ -88,9 +88,37 @@ const AboutSection = () => {
         }}
       />
 
+      <motion.div
+        className="absolute top-1/4 left-10 w-20 h-20 bg-green-400/15 rounded-full"
+        animate={{ 
+          y: [0, 30, 0],
+          x: [0, -20, 0],
+          rotate: [0, 180, 360]
+        }}
+        transition={{ 
+          duration: 9,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
+
+      <motion.div
+        className="absolute bottom-1/4 left-1/3 w-14 h-14 bg-blue-600/20 rounded-full"
+        animate={{ 
+          scale: [1, 1.3, 1],
+          opacity: [0.3, 0.6, 0.3],
+          rotate: [360, 0]
+        }}
+        transition={{ 
+          duration: 7,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
+
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
-          {/* Office Cafeteria Image */}
+          {/* Office Cafeteria Image with Organic Shape */}
           <motion.div
             className="relative order-2 lg:order-1"
             initial={{ opacity: 0, x: -50 }}
@@ -98,26 +126,44 @@ const AboutSection = () => {
             transition={{ duration: 0.8 }}
           >
             <div className="relative z-10">
+              {/* Organic blob background */}
               <motion.div
-                className="relative overflow-hidden"
+                className="absolute inset-0 bg-gradient-to-bl from-green-400/20 via-blue-400/15 to-green-500/20 rounded-[40px] transform -rotate-3"
                 style={{
-                  clipPath: "polygon(0% 0%, 80% 0%, 100% 100%, 20% 100%)",
-                  borderRadius: "20px"
+                  clipPath: "polygon(25% 5%, 75% 0%, 95% 35%, 100% 75%, 80% 95%, 20% 100%, 0% 65%, 5% 25%)"
+                }}
+                animate={{ 
+                  rotate: [-3, 2, -3],
+                  scale: [1, 1.01, 1]
+                }}
+                transition={{ 
+                  duration: 9,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+              
+              {/* Floating image container */}
+              <motion.div
+                className="relative overflow-hidden rounded-[35px] shadow-2xl"
+                style={{
+                  clipPath: "polygon(15% 5%, 85% 0%, 100% 80%, 80% 100%, 0% 95%, 5% 20%)"
                 }}
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
               >
                 <img
-                  src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Office employees with laptops and food at cafeteria table"
+                  src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Office employees eating together in cafeteria with laptops and food"
                   className="w-full h-[400px] object-cover"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
               </motion.div>
             </div>
             
-            {/* Enhanced floating elements with mixed colors */}
+            {/* Enhanced floating elements */}
             <motion.div
-              className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-r from-blue-500 to-green-500 rounded-full opacity-20"
+              className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-r from-blue-500/30 to-green-500/30 rounded-full blur-sm"
               animate={{ 
                 y: [0, -15, 0],
                 rotate: [0, 180, 360]
@@ -130,27 +176,13 @@ const AboutSection = () => {
             />
             
             <motion.div
-              className="absolute -bottom-4 -left-4 w-12 h-12 bg-gradient-to-r from-green-500 to-blue-700 rounded-full opacity-25"
+              className="absolute -bottom-4 -left-4 w-12 h-12 bg-gradient-to-r from-green-500/30 to-blue-700/30 rounded-full blur-sm"
               animate={{ 
                 y: [0, 15, 0],
                 scale: [1, 1.1, 1]
               }}
               transition={{ 
                 duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
-
-            <motion.div
-              className="absolute top-1/4 -left-6 w-8 h-8 bg-green-400 rounded-full opacity-30"
-              animate={{ 
-                x: [0, 10, 0],
-                y: [0, -10, 0],
-                rotate: [0, 180, 360]
-              }}
-              transition={{ 
-                duration: 6,
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
