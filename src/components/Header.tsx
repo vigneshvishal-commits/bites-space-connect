@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
@@ -36,6 +35,10 @@ const Header = () => {
   const handleNavClick = (href: string) => {
     smoothScroll(href);
     setIsMobileMenuOpen(false);
+  };
+
+  const handleAdminVendorClick = (type: 'admin' | 'vendor') => {
+    window.location.href = '/login';
   };
 
   return (
@@ -91,6 +94,7 @@ const Header = () => {
           {/* Action Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             <motion.button
+              onClick={() => handleAdminVendorClick('admin')}
               className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl"
               style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
               whileHover={{ scale: 1.05, y: -2 }}
@@ -137,7 +141,11 @@ const Header = () => {
                 </button>
               ))}
               <div className="flex flex-col space-y-2 pt-4 border-t">
-                <button className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                <button 
+                  onClick={() => handleAdminVendorClick('admin')}
+                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium" 
+                  style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                >
                   Admin/Vendor
                 </button>
                 <button className="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-medium" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
