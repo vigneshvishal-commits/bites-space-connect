@@ -9,7 +9,13 @@ const StallsSection = () => {
     threshold: 0.1
   });
 
+  // Dynamic stalls data matching admin module vendor data
   const stalls = [
+    {
+      name: "Spice Paradise",
+      image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+      specialty: "Multi Cuisine"
+    },
     {
       name: "Healthy Bites",
       image: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
@@ -26,27 +32,22 @@ const StallsSection = () => {
       specialty: "Cafe & Beverages"
     },
     {
-      name: "Spice Paradise",
-      image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-      specialty: "Multi Cuisine"
-    },
-    {
       name: "Snack Hub",
       image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
       specialty: "Snacks"
     },
     {
-      name: "Green Garden",
+      name: "Green Bowl",
       image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
       specialty: "Healthy Food"
     },
     {
-      name: "Curry Express",
-      image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-      specialty: "Multi Cuisine"
+      name: "Pizza Point",
+      image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+      specialty: "Fast Food"
     },
     {
-      name: "Coffee Corner",
+      name: "Tea Time",
       image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
       specialty: "Cafe & Beverages"
     }

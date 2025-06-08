@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Store, ShoppingCart, TrendingUp, DollarSign, MapPin } from 'lucide-react';
+import { Store, ShoppingCart, DollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const DashboardOverview = () => {
   const [selectedVendor, setSelectedVendor] = useState('All Vendors');
@@ -31,13 +31,13 @@ const DashboardOverview = () => {
   ];
 
   const locationData = [
-    { location: 'SRZ SDB Floor 1 Wing A', vendors: 3, color: '#3b82f6' },
-    { location: 'SRZ SDB Floor 1 Wing B', vendors: 2, color: '#10b981' },
-    { location: 'SRZ SDB2 Floor 2 Wing A', vendors: 2, color: '#8b5cf6' },
-    { location: 'SRZ SDB1 Floor 2 Wing B', vendors: 1, color: '#f59e0b' }
+    { name: 'Floor 1 Wing A', value: 38, color: '#3b82f6' },
+    { name: 'Floor 1 Wing B', value: 25, color: '#10b981' },
+    { name: 'Floor 2 Wing A', value: 25, color: '#8b5cf6' },
+    { name: 'Floor 2 Wing B', value: 12, color: '#f59e0b' }
   ];
 
-  const vendors = ['All Vendors', 'Healthy Bites', 'Fast Corner', 'Cafe Delight', 'Spice Paradise', 'Snack Hub', 'Green Garden', 'Curry Express', 'Coffee Corner'];
+  const vendors = ['All Vendors', 'Spice Paradise', 'Healthy Bites', 'Fast Corner', 'Cafe Delight', 'Snack Hub', 'Green Bowl', 'Pizza Point', 'Tea Time'];
 
   return (
     <div className="space-y-8">
@@ -86,7 +86,7 @@ const DashboardOverview = () => {
         })}
       </div>
 
-      {/* Revenue and Orders Trend - Big Chart */}
+      {/* Revenue and Orders Trend - Full Width Chart */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -95,10 +95,7 @@ const DashboardOverview = () => {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center space-x-2">
-                <TrendingUp className="w-5 h-5 text-blue-600" />
-                <span>Revenue & Orders Trend</span>
-              </CardTitle>
+              <CardTitle className="text-xl font-semibold">Revenue & Orders Trend</CardTitle>
               <select 
                 className="p-2 border rounded-md text-sm"
                 value={selectedVendor}
@@ -125,7 +122,7 @@ const DashboardOverview = () => {
         </Card>
       </motion.div>
 
-      {/* Two Charts Side by Side */}
+      {/* Two Side-by-Side Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Vendor Distribution by Type */}
         <motion.div
@@ -135,10 +132,7 @@ const DashboardOverview = () => {
         >
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Store className="w-5 h-5 text-purple-600" />
-                <span>Distribution by Type</span>
-              </CardTitle>
+              <CardTitle className="text-lg font-semibold">Distribution by Type</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -179,26 +173,32 @@ const DashboardOverview = () => {
         >
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <MapPin className="w-5 h-5 text-orange-600" />
-                <span>Distribution by Location</span>
-              </CardTitle>
+              <CardTitle className="text-lg font-semibold">Distribution by Location</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={locationData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="location" tick={false} />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="vendors" fill="#3b82f6" />
-                </BarChart>
+                <PieChart>
+                  <Pie
+                    data={locationData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={120}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {locationData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => [`${value}%`, 'Percentage']} />
+                </PieChart>
               </ResponsiveContainer>
               <div className="flex flex-wrap justify-center gap-2 mt-4">
                 {locationData.map((entry, index) => (
                   <div key={index} className="flex items-center space-x-1">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
-                    <span className="text-xs text-gray-600">{entry.location}</span>
+                    <span className="text-xs text-gray-600">{entry.name}</span>
                   </div>
                 ))}
               </div>

@@ -74,7 +74,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 <img 
                   src="/lovable-uploads/b3787bd3-143a-4cb2-9fdf-8228781e5bf4.png" 
                   alt="Bites Space" 
-                  className="w-24 h-24 object-contain"
+                  className="w-32 h-32 object-contain"
                 />
                 <span className="font-bold text-2xl text-gray-800" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                   Bites Space
@@ -131,7 +131,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         </nav>
 
         {/* Profile Section in Footer */}
-        <div className="border-t border-gray-200 p-4">
+        <div className="border-t border-gray-200 p-4 mt-auto">
           <motion.button
             onClick={handleProfileClick}
             className={`w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors ${

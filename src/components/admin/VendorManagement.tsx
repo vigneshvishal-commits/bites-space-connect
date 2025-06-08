@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Eye, Edit, Trash2, ToggleLeft, ToggleRight, Key, RefreshCw, Send, CheckCircle } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, ToggleLeft, ToggleRight, Key, RefreshCw, Send, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import VendorSearch from './VendorSearch';
 
 const VendorManagement = () => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -16,7 +16,9 @@ const VendorManagement = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [locationFilter, setLocationFilter] = useState('all');
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [showSuccess, setShowSuccess] = useState('');
   const [formData, setFormData] = useState({
@@ -52,7 +54,6 @@ const VendorManagement = () => {
       isActive: false,
       joinDate: "2024-02-20"
     },
-    // Add 6 more vendors to make it 8 total
     {
       id: 3,
       outletName: "Fast Corner",
@@ -122,13 +123,14 @@ const VendorManagement = () => {
   ]);
 
   const filteredVendors = vendors.filter(vendor => {
-    const matchesSearch = vendor.outletName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSort = sortBy === 'all' || 
-                       (sortBy === 'active' && vendor.isActive) ||
-                       (sortBy === 'inactive' && !vendor.isActive) ||
-                       vendor.outletType === sortBy ||
-                       vendor.location === sortBy;
-    return matchesSearch && matchesSort;
+    const matchesSearch = searchTerm === '' || vendor.outletName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'active' && vendor.isActive) ||
+                         (statusFilter === 'inactive' && !vendor.isActive);
+    const matchesType = typeFilter === 'all' || vendor.outletType === typeFilter;
+    const matchesLocation = locationFilter === 'all' || vendor.location === locationFilter;
+    
+    return matchesSearch && matchesStatus && matchesType && matchesLocation;
   });
 
   const totalVendors = vendors.length;
@@ -268,29 +270,45 @@ const VendorManagement = () => {
       {/* Search and Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex items-center space-x-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input 
-                placeholder="Search outlet name..." 
-                className="pl-10" 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <VendorSearch 
+              vendors={vendors}
+              onVendorSelect={(vendor) => {
+                setSearchTerm(vendor.name);
+              }}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+            />
+            
             <select 
               className="p-2 border rounded-md"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
             >
-              <option value="all">All Vendors</option>
+              <option value="all">All Status</option>
               <option value="active">Active Only</option>
               <option value="inactive">Inactive Only</option>
+            </select>
+            
+            <select 
+              className="p-2 border rounded-md"
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+            >
+              <option value="all">All Types</option>
               <option value="Healthy Food">Healthy Food</option>
               <option value="Fast Food">Fast Food</option>
               <option value="Cafe and Beverages">Cafe & Beverages</option>
               <option value="Multi Cuisine">Multi Cuisine</option>
               <option value="Snack and Refreshment">Snacks</option>
+            </select>
+            
+            <select 
+              className="p-2 border rounded-md"
+              value={locationFilter}
+              onChange={(e) => setLocationFilter(e.target.value)}
+            >
+              <option value="all">All Locations</option>
               <option value="SRZ SDB Floor 1 Wing A">Floor 1 Wing A</option>
               <option value="SRZ SDB Floor 1 Wing B">Floor 1 Wing B</option>
               <option value="SRZ SDB2 Floor 2 Wing A">Floor 2 Wing A</option>
@@ -333,7 +351,7 @@ const VendorManagement = () => {
                     <td className="p-4">{vendor.location}</td>
                     <td className="p-4">{vendor.outletType}</td>
                     <td className="p-4">
-                      <Badge variant={vendor.isActive ? "default" : "destructive"}>
+                      <Badge variant={vendor.isActive ? "default" : "destructive"} className={vendor.isActive ? "bg-green-600" : ""}>
                         {vendor.isActive ? "Active" : "Inactive"}
                       </Badge>
                     </td>
@@ -346,6 +364,8 @@ const VendorManagement = () => {
                             setSelectedVendor(vendor);
                             setShowViewModal(true);
                           }}
+                          title="View Details"
+                          className="hover:bg-blue-50"
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
@@ -357,6 +377,8 @@ const VendorManagement = () => {
                             setFormData(vendor);
                             setShowEditModal(true);
                           }}
+                          title="Edit Vendor"
+                          className="hover:bg-yellow-50"
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
@@ -367,6 +389,8 @@ const VendorManagement = () => {
                             setSelectedVendor(vendor);
                             setShowDeleteConfirm(true);
                           }}
+                          title="Delete Vendor"
+                          className="hover:bg-red-50"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -379,6 +403,8 @@ const VendorManagement = () => {
                             generatePassword();
                             setShowCredentialsModal(true);
                           }}
+                          title="Generate Credentials"
+                          className="hover:bg-green-50"
                         >
                           <Key className="w-4 h-4" />
                         </Button>
