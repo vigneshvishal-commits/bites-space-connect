@@ -1,26 +1,9 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  LayoutDashboard, 
-  Store, 
-  Users, 
-  BarChart3, 
-  Settings, 
-  LogOut, 
-  Bell,
-  Search,
-  Plus
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AdminSidebar from '@/components/admin/AdminSidebar';
-import AdminHeader from '@/components/admin/AdminHeader';
 import DashboardOverview from '@/components/admin/DashboardOverview';
 import VendorManagement from '@/components/admin/VendorManagement';
-import UserManagement from '@/components/admin/UserManagement';
-import Analytics from '@/components/admin/Analytics';
 import TicketManagement from '@/components/admin/TicketManagement';
 
 const AdminDashboard = () => {
@@ -33,10 +16,6 @@ const AdminDashboard = () => {
         return <DashboardOverview />;
       case 'vendors':
         return <VendorManagement />;
-      case 'users':
-        return <UserManagement />;
-      case 'analytics':
-        return <Analytics />;
       case 'tickets':
         return <TicketManagement />;
       default:
@@ -45,7 +24,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex">
       <AdminSidebar 
         activeSection={activeSection}
         setActiveSection={setActiveSection}
@@ -53,10 +32,8 @@ const AdminDashboard = () => {
         setCollapsed={setSidebarCollapsed}
       />
       
-      <div className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
-        <AdminHeader />
-        
-        <main className="p-6">
+      <div className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'ml-20' : 'ml-80'}`}>
+        <main className="p-8">
           <motion.div
             key={activeSection}
             initial={{ opacity: 0, y: 20 }}
