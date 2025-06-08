@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Eye, Edit, Trash2, ToggleLeft, ToggleRight, Key, RefreshCw, Send, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
@@ -274,7 +274,7 @@ const VendorManagement = () => {
             <VendorSearch 
               vendors={vendors}
               onVendorSelect={(vendor) => {
-                setSearchTerm(vendor.name);
+                setSearchTerm(vendor.outletName);
               }}
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}

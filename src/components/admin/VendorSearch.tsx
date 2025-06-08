@@ -4,7 +4,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search } from 'lucide-react';
 
 interface VendorSearchProps {
-  vendors: Array<{ name: string; email: string; type: string; location: string; status: string }>;
+  vendors: Array<{ 
+    id: number;
+    outletName: string; 
+    vendorName: string; 
+    vendorEmail: string; 
+    location: string; 
+    contact: string; 
+    outletType: string; 
+    isActive: boolean; 
+    joinDate: string;
+  }>;
   onVendorSelect: (vendor: any) => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
@@ -19,11 +29,11 @@ const VendorSearch: React.FC<VendorSearchProps> = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const filteredVendors = vendors.filter(vendor =>
-    vendor.name.toLowerCase().includes(searchTerm.toLowerCase())
+    vendor.outletName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleVendorClick = (vendor: any) => {
-    setSearchTerm(vendor.name);
+    setSearchTerm(vendor.outletName);
     setShowSuggestions(false);
     onVendorSelect(vendor);
   };
@@ -56,15 +66,15 @@ const VendorSearch: React.FC<VendorSearchProps> = ({
           >
             {filteredVendors.map((vendor, index) => (
               <motion.div
-                key={vendor.email}
+                key={vendor.vendorEmail}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: index * 0.05 }}
                 onClick={() => handleVendorClick(vendor)}
                 className="p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
               >
-                <div className="font-medium text-gray-800">{vendor.name}</div>
-                <div className="text-sm text-gray-600">{vendor.type} • {vendor.location}</div>
+                <div className="font-medium text-gray-800">{vendor.outletName}</div>
+                <div className="text-sm text-gray-600">{vendor.outletType} • {vendor.location}</div>
               </motion.div>
             ))}
           </motion.div>
