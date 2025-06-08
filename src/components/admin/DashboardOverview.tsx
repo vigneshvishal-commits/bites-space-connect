@@ -1,15 +1,19 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Store, ShoppingCart, DollarSign } from 'lucide-react';
+import { Store, Users, ShoppingCart, TrendingUp, DollarSign, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 
 const DashboardOverview = () => {
-  const [selectedVendor, setSelectedVendor] = useState('All Vendors');
+  const stats = [
+    { title: 'Total Revenue', value: '₹2,45,890', change: '+15.3%', icon: DollarSign, color: 'text-green-600', bgColor: 'bg-green-100' },
+    { title: 'Total Orders', value: '1,847', change: '+12.5%', icon: ShoppingCart, color: 'text-blue-600', bgColor: 'bg-blue-100' },
+    { title: 'Active Vendors', value: '8', change: '+2', icon: Store, color: 'text-purple-600', bgColor: 'bg-purple-100' },
+    { title: 'Total Users', value: '523', change: '+18.2%', icon: Users, color: 'text-orange-600', bgColor: 'bg-orange-100' }
+  ];
 
-  // All vendors trend data
-  const allVendorsData = [
+  const revenueData = [
     { month: 'Jan', revenue: 25000, orders: 180 },
     { month: 'Feb', revenue: 28000, orders: 220 },
     { month: 'Mar', revenue: 32000, orders: 280 },
@@ -18,107 +22,27 @@ const DashboardOverview = () => {
     { month: 'Jun', revenue: 45890, orders: 420 }
   ];
 
-  // Individual vendor data
-  const vendorSpecificData = {
-    'Spice Paradise': [
-      { month: 'Jan', revenue: 4500, orders: 32 },
-      { month: 'Feb', revenue: 5200, orders: 38 },
-      { month: 'Mar', revenue: 6100, orders: 45 },
-      { month: 'Apr', revenue: 6800, orders: 52 },
-      { month: 'May', revenue: 7200, orders: 58 },
-      { month: 'Jun', revenue: 8100, orders: 62 }
-    ],
-    'Healthy Bites': [
-      { month: 'Jan', revenue: 3200, orders: 28 },
-      { month: 'Feb', revenue: 3800, orders: 32 },
-      { month: 'Mar', revenue: 4200, orders: 38 },
-      { month: 'Apr', revenue: 4600, orders: 42 },
-      { month: 'May', revenue: 5100, orders: 46 },
-      { month: 'Jun', revenue: 5500, orders: 50 }
-    ],
-    'Fast Corner': [
-      { month: 'Jan', revenue: 3800, orders: 42 },
-      { month: 'Feb', revenue: 4200, orders: 48 },
-      { month: 'Mar', revenue: 4800, orders: 55 },
-      { month: 'Apr', revenue: 5200, orders: 62 },
-      { month: 'May', revenue: 5800, orders: 68 },
-      { month: 'Jun', revenue: 6200, orders: 72 }
-    ],
-    'Cafe Delight': [
-      { month: 'Jan', revenue: 2800, orders: 35 },
-      { month: 'Feb', revenue: 3200, orders: 40 },
-      { month: 'Mar', revenue: 3600, orders: 48 },
-      { month: 'Apr', revenue: 4000, orders: 55 },
-      { month: 'May', revenue: 4400, orders: 62 },
-      { month: 'Jun', revenue: 4800, orders: 68 }
-    ],
-    'Snack Hub': [
-      { month: 'Jan', revenue: 2200, orders: 25 },
-      { month: 'Feb', revenue: 2600, orders: 30 },
-      { month: 'Mar', revenue: 3000, orders: 38 },
-      { month: 'Apr', revenue: 3400, orders: 45 },
-      { month: 'May', revenue: 3800, orders: 52 },
-      { month: 'Jun', revenue: 4200, orders: 58 }
-    ],
-    'Green Bowl': [
-      { month: 'Jan', revenue: 3000, orders: 30 },
-      { month: 'Feb', revenue: 3400, orders: 35 },
-      { month: 'Mar', revenue: 3800, orders: 42 },
-      { month: 'Apr', revenue: 4200, orders: 48 },
-      { month: 'May', revenue: 4600, orders: 55 },
-      { month: 'Jun', revenue: 5000, orders: 62 }
-    ],
-    'Pizza Point': [
-      { month: 'Jan', revenue: 3500, orders: 40 },
-      { month: 'Feb', revenue: 3900, orders: 45 },
-      { month: 'Mar', revenue: 4300, orders: 52 },
-      { month: 'Apr', revenue: 4700, orders: 58 },
-      { month: 'May', revenue: 5100, orders: 65 },
-      { month: 'Jun', revenue: 5500, orders: 70 }
-    ],
-    'Tea Time': [
-      { month: 'Jan', revenue: 1800, orders: 22 },
-      { month: 'Feb', revenue: 2100, orders: 26 },
-      { month: 'Mar', revenue: 2400, orders: 32 },
-      { month: 'Apr', revenue: 2700, orders: 38 },
-      { month: 'May', revenue: 3000, orders: 44 },
-      { month: 'Jun', revenue: 3300, orders: 50 }
-    ]
-  };
-
-  const getCurrentData = () => {
-    if (selectedVendor === 'All Vendors') {
-      return allVendorsData;
-    }
-    return vendorSpecificData[selectedVendor] || allVendorsData;
-  };
-
-  // Calculate totals based on current data
-  const currentData = getCurrentData();
-  const totalRevenue = currentData.reduce((sum, item) => sum + item.revenue, 0);
-  const totalOrders = currentData.reduce((sum, item) => sum + item.orders, 0);
-
-  const stats = [
-    { title: 'Total Revenue', value: `₹${totalRevenue.toLocaleString()}`, change: '+15.3%', icon: DollarSign, color: 'text-green-600', bgColor: 'bg-green-100' },
-    { title: 'Total Orders', value: totalOrders.toLocaleString(), change: '+12.5%', icon: ShoppingCart, color: 'text-blue-600', bgColor: 'bg-blue-100' },
-    { title: 'Total Vendors', value: '8', change: '+2', icon: Store, color: 'text-purple-600', bgColor: 'bg-purple-100' }
-  ];
-
   const vendorTypeData = [
-    { name: 'Healthy Food', value: 2, color: '#10b981' },
-    { name: 'Fast Food', value: 2, color: '#3b82f6' },
-    { name: 'Cafe & Beverages', value: 2, color: '#8b5cf6' },
-    { name: 'Multi Cuisine', value: 2, color: '#f59e0b' }
+    { name: 'Healthy Food', value: 30, color: '#10b981' },
+    { name: 'Fast Food', value: 25, color: '#3b82f6' },
+    { name: 'Cafe & Beverages', value: 20, color: '#8b5cf6' },
+    { name: 'Multi Cuisine', value: 15, color: '#f59e0b' },
+    { name: 'Snacks', value: 10, color: '#ef4444' }
   ];
 
   const locationData = [
-    { name: 'SRZ SDB Floor 1 Wing A', value: 3, color: '#3b82f6' },
-    { name: 'SRZ SDB Floor 1 Wing B', value: 2, color: '#10b981' },
-    { name: 'SRZ SDB2 Floor 2 Wing A', value: 2, color: '#8b5cf6' },
-    { name: 'SRZ SDB1 Floor 2 Wing B', value: 1, color: '#f59e0b' }
+    { location: 'SRZ SDB Floor 1 Wing A', vendors: 3, color: '#3b82f6' },
+    { location: 'SRZ SDB Floor 1 Wing B', vendors: 2, color: '#10b981' },
+    { location: 'SRZ SDB2 Floor 2 Wing A', vendors: 2, color: '#8b5cf6' },
+    { location: 'SRZ SDB1 Floor 2 Wing B', vendors: 1, color: '#f59e0b' }
   ];
 
-  const vendors = ['All Vendors', 'Spice Paradise', 'Healthy Bites', 'Fast Corner', 'Cafe Delight', 'Snack Hub', 'Green Bowl', 'Pizza Point', 'Tea Time'];
+  const recentOrders = [
+    { id: '#1847', customer: 'John Doe', vendor: 'Healthy Bites', amount: '₹245', status: 'Completed', time: '10:30 AM' },
+    { id: '#1846', customer: 'Jane Smith', vendor: 'Fast Corner', amount: '₹180', status: 'Processing', time: '10:15 AM' },
+    { id: '#1845', customer: 'Mike Johnson', vendor: 'Cafe Delight', amount: '₹320', status: 'Completed', time: '09:45 AM' },
+    { id: '#1844', customer: 'Sarah Wilson', vendor: 'Snack Hub', amount: '₹150', status: 'Pending', time: '09:30 AM' }
+  ];
 
   return (
     <div className="space-y-8">
@@ -137,8 +61,8 @@ const DashboardOverview = () => {
         </p>
       </motion.div>
 
-      {/* Main Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
@@ -167,60 +91,48 @@ const DashboardOverview = () => {
         })}
       </div>
 
-      {/* Revenue and Orders Trend - Full Width Chart */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-      >
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <CardTitle className="text-xl font-semibold">Revenue & Orders Trend</CardTitle>
-              <select 
-                className="p-2 border rounded-md text-sm max-w-xs"
-                value={selectedVendor}
-                onChange={(e) => setSelectedVendor(e.target.value)}
-              >
-                {vendors.map(vendor => (
-                  <option key={vendor} value={vendor}>{vendor}</option>
-                ))}
-              </select>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={getCurrentData()}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
-                <XAxis dataKey="month" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#ffffff', 
-                    border: '1px solid #e5e7eb', 
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }} 
-                />
-                <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} name="Revenue (₹)" dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }} />
-                <Line type="monotone" dataKey="orders" stroke="#10b981" strokeWidth={3} name="Orders" dot={{ fill: '#10b981', strokeWidth: 2, r: 6 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Two Side-by-Side Charts - Reordered */}
+      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Vendor Distribution by Type - First */}
+        {/* Revenue Trend */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <TrendingUp className="w-5 h-5 text-blue-600" />
+                <span>Revenue & Orders Trend</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} />
+                  <Line type="monotone" dataKey="orders" stroke="#10b981" strokeWidth={3} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Vendor Distribution by Type */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.5 }}
         >
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-semibold">Distribution by Type</CardTitle>
+              <CardTitle className="flex items-center space-x-2">
+                <Store className="w-5 h-5 text-purple-600" />
+                <span>Vendor Distribution by Type</span>
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -238,66 +150,90 @@ const DashboardOverview = () => {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => [value, 'Count']} />
+                  <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="flex flex-wrap justify-center gap-2 mt-4">
-                {vendorTypeData.map((entry, index) => (
-                  <div key={index} className="flex items-center space-x-1">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
-                    <span className="text-xs text-gray-600">{entry.name} ({entry.value})</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Distribution by Location - Second */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">Distribution by Location</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={locationData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
-                  <XAxis 
-                    dataKey="name" 
-                    tick={false}
-                    tickFormatter={() => ''}
-                  />
-                  <YAxis domain={[0, 'dataMax']} tickCount={4} stroke="#6b7280" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#ffffff', 
-                      border: '1px solid #e5e7eb', 
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                    }} 
-                  />
-                  <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-              <div className="flex flex-wrap justify-center gap-2 mt-4">
-                {locationData.map((entry, index) => (
-                  <div key={index} className="flex items-center space-x-1">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
-                    <span className="text-xs text-gray-600 text-center">
-                      {entry.name.length > 15 ? `Location ${index + 1}` : entry.name} ({entry.value})
-                    </span>
-                  </div>
-                ))}
-              </div>
             </CardContent>
           </Card>
         </motion.div>
       </div>
+
+      {/* Location Distribution */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <MapPin className="w-5 h-5 text-orange-600" />
+              <span>Vendor Distribution by Location</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={locationData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="location" angle={-45} textAnchor="end" height={100} />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="vendors" fill="#3b82f6" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Recent Orders */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <ShoppingCart className="w-5 h-5 text-green-600" />
+              <span>Recent Orders</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentOrders.map((order, index) => (
+                <motion.div
+                  key={order.id}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.8 + index * 0.1 }}
+                >
+                  <div className="flex items-center space-x-4">
+                    <div>
+                      <p className="font-medium text-gray-900">{order.id}</p>
+                      <p className="text-sm text-gray-600">{order.customer}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{order.vendor}</p>
+                      <p className="text-sm text-gray-600">{order.time}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <p className="font-medium">{order.amount}</p>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      order.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                      order.status === 'Processing' ? 'bg-blue-100 text-blue-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {order.status}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 };

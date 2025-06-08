@@ -135,7 +135,7 @@ const TicketManagement = () => {
 
   const counts = getTicketCounts();
 
-  const outlets = ['All Vendors', 'Spice Paradise', 'Fast Corner', 'Healthy Bites', 'Cafe Delight', 'Snack Hub', 'Green Bowl', 'Pizza Point', 'Tea Time'];
+  const outlets = ['All Vendors', ...Array.from(new Set(tickets.map(t => t.vendorName)))];
 
   return (
     <div className="space-y-6">
@@ -207,7 +207,7 @@ const TicketManagement = () => {
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-center space-x-4">
             <select 
               className="p-2 border rounded-md"
               value={selectedStatus}
@@ -285,7 +285,7 @@ const TicketManagement = () => {
                     </td>
                     <td className="p-4">{ticket.vendorName}</td>
                     <td className="p-4">
-                      <Badge variant={getStatusColor(ticket.status)} className={ticket.status === 'resolved' ? 'bg-green-600' : ''}>
+                      <Badge variant={getStatusColor(ticket.status)}>
                         {ticket.status.replace('-', ' ')}
                       </Badge>
                     </td>
@@ -303,8 +303,6 @@ const TicketManagement = () => {
                           setSelectedTicket(ticket);
                           setShowTicketModal(true);
                         }}
-                        title="View Details"
-                        className="hover:bg-blue-50"
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
@@ -334,7 +332,7 @@ const TicketManagement = () => {
             >
               <div className="flex justify-between items-start mb-6">
                 <h2 className="text-2xl font-semibold">Ticket Details</h2>
-                <Badge variant={getStatusColor(selectedTicket.status)} className={selectedTicket.status === 'resolved' ? 'bg-green-600' : ''}>
+                <Badge variant={getStatusColor(selectedTicket.status)}>
                   {selectedTicket.status.replace('-', ' ')}
                 </Badge>
               </div>
