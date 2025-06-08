@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Store, ShoppingCart, DollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 
 const DashboardOverview = () => {
   const [selectedVendor, setSelectedVendor] = useState('All Vendors');
@@ -14,7 +14,8 @@ const DashboardOverview = () => {
     { title: 'Total Vendors', value: '8', change: '+2', icon: Store, color: 'text-purple-600', bgColor: 'bg-purple-100' }
   ];
 
-  const revenueData = [
+  // All vendors trend data
+  const allVendorsData = [
     { month: 'Jan', revenue: 25000, orders: 180 },
     { month: 'Feb', revenue: 28000, orders: 220 },
     { month: 'Mar', revenue: 32000, orders: 280 },
@@ -23,18 +24,53 @@ const DashboardOverview = () => {
     { month: 'Jun', revenue: 45890, orders: 420 }
   ];
 
+  // Individual vendor data
+  const vendorSpecificData = {
+    'Spice Paradise': [
+      { month: 'Jan', revenue: 4500, orders: 32 },
+      { month: 'Feb', revenue: 5200, orders: 38 },
+      { month: 'Mar', revenue: 6100, orders: 45 },
+      { month: 'Apr', revenue: 6800, orders: 52 },
+      { month: 'May', revenue: 7200, orders: 58 },
+      { month: 'Jun', revenue: 8100, orders: 62 }
+    ],
+    'Healthy Bites': [
+      { month: 'Jan', revenue: 3200, orders: 28 },
+      { month: 'Feb', revenue: 3800, orders: 32 },
+      { month: 'Mar', revenue: 4200, orders: 38 },
+      { month: 'Apr', revenue: 4600, orders: 42 },
+      { month: 'May', revenue: 5100, orders: 46 },
+      { month: 'Jun', revenue: 5500, orders: 50 }
+    ],
+    'Fast Corner': [
+      { month: 'Jan', revenue: 3800, orders: 42 },
+      { month: 'Feb', revenue: 4200, orders: 48 },
+      { month: 'Mar', revenue: 4800, orders: 55 },
+      { month: 'Apr', revenue: 5200, orders: 62 },
+      { month: 'May', revenue: 5800, orders: 68 },
+      { month: 'Jun', revenue: 6200, orders: 72 }
+    ]
+  };
+
+  const getCurrentData = () => {
+    if (selectedVendor === 'All Vendors') {
+      return allVendorsData;
+    }
+    return vendorSpecificData[selectedVendor] || allVendorsData;
+  };
+
   const vendorTypeData = [
-    { name: 'Healthy Food', value: 25, color: '#10b981' },
-    { name: 'Fast Food', value: 25, color: '#3b82f6' },
-    { name: 'Cafe & Beverages', value: 25, color: '#8b5cf6' },
-    { name: 'Multi Cuisine', value: 25, color: '#f59e0b' }
+    { name: 'Healthy Food', value: 2, color: '#10b981' },
+    { name: 'Fast Food', value: 2, color: '#3b82f6' },
+    { name: 'Cafe & Beverages', value: 2, color: '#8b5cf6' },
+    { name: 'Multi Cuisine', value: 2, color: '#f59e0b' }
   ];
 
   const locationData = [
-    { name: 'Floor 1 Wing A', value: 38, color: '#3b82f6' },
-    { name: 'Floor 1 Wing B', value: 25, color: '#10b981' },
-    { name: 'Floor 2 Wing A', value: 25, color: '#8b5cf6' },
-    { name: 'Floor 2 Wing B', value: 12, color: '#f59e0b' }
+    { name: 'SRZ SDB Floor 1 Wing A', value: 3, color: '#3b82f6' },
+    { name: 'SRZ SDB Floor 1 Wing B', value: 2, color: '#10b981' },
+    { name: 'SRZ SDB2 Floor 2 Wing A', value: 2, color: '#8b5cf6' },
+    { name: 'SRZ SDB1 Floor 2 Wing B', value: 1, color: '#f59e0b' }
   ];
 
   const vendors = ['All Vendors', 'Spice Paradise', 'Healthy Bites', 'Fast Corner', 'Cafe Delight', 'Snack Hub', 'Green Bowl', 'Pizza Point', 'Tea Time'];
@@ -109,7 +145,7 @@ const DashboardOverview = () => {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={revenueData}>
+              <LineChart data={getCurrentData()}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
@@ -150,14 +186,14 @@ const DashboardOverview = () => {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => [`${value}%`, 'Percentage']} />
+                  <Tooltip formatter={(value) => [value, 'Count']} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="flex flex-wrap justify-center gap-2 mt-4">
                 {vendorTypeData.map((entry, index) => (
                   <div key={index} className="flex items-center space-x-1">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
-                    <span className="text-xs text-gray-600">{entry.name}</span>
+                    <span className="text-xs text-gray-600">{entry.name} ({entry.value})</span>
                   </div>
                 ))}
               </div>
@@ -177,28 +213,23 @@ const DashboardOverview = () => {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={locationData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={120}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {locationData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => [`${value}%`, 'Percentage']} />
-                </PieChart>
+                <BarChart data={locationData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={false}
+                    tickFormatter={() => ''}
+                  />
+                  <YAxis domain={[0, 'dataMax']} tickCount={4} />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="#3b82f6" />
+                </BarChart>
               </ResponsiveContainer>
               <div className="flex flex-wrap justify-center gap-2 mt-4">
                 {locationData.map((entry, index) => (
                   <div key={index} className="flex items-center space-x-1">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
-                    <span className="text-xs text-gray-600">{entry.name}</span>
+                    <span className="text-xs text-gray-600">{entry.name} ({entry.value})</span>
                   </div>
                 ))}
               </div>

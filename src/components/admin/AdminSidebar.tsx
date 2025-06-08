@@ -102,7 +102,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         </div>
 
         {/* Navigation Menu */}
-        <nav className="flex-1 mt-8">
+        <nav className="flex-1 mt-8 pb-24">
           {menuItems.map((item, index) => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
@@ -131,7 +131,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         </nav>
 
         {/* Profile Section in Footer */}
-        <div className="border-t border-gray-200 p-4 mt-auto">
+        <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 p-4">
           <motion.button
             onClick={handleProfileClick}
             className={`w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors ${
@@ -158,7 +158,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 animate={{ opacity: 1, height: 'auto', y: 0 }}
                 exit={{ opacity: 0, height: 0, y: 20 }}
                 transition={{ duration: 0.3 }}
-                className="mt-3 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200"
+                className="fixed bottom-20 left-4 right-4 max-w-72 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200 p-4 shadow-xl z-50"
               >
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center space-x-3 mb-3">

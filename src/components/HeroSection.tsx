@@ -76,7 +76,7 @@ const HeroSection = () => {
         >
           <div className="relative">
             <motion.img
-              src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+              src="https://images.unsplash.com/photo-1490818387583-1baba5e638af?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
               alt="Vibrant multi-cuisine food platter"
               className="rounded-3xl shadow-2xl w-full object-cover h-[600px]"
               whileHover={{ scale: 1.02 }}
