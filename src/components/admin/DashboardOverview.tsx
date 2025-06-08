@@ -8,6 +8,12 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 const DashboardOverview = () => {
   const [selectedVendor, setSelectedVendor] = useState('All Vendors');
 
+  const stats = [
+    { title: 'Total Revenue', value: '₹2,45,890', change: '+15.3%', icon: DollarSign, color: 'text-green-600', bgColor: 'bg-green-100' },
+    { title: 'Total Orders', value: '1,847', change: '+12.5%', icon: ShoppingCart, color: 'text-blue-600', bgColor: 'bg-blue-100' },
+    { title: 'Total Vendors', value: '8', change: '+2', icon: Store, color: 'text-purple-600', bgColor: 'bg-purple-100' }
+  ];
+
   // All vendors trend data
   const allVendorsData = [
     { month: 'Jan', revenue: 25000, orders: 180 },
@@ -43,46 +49,6 @@ const DashboardOverview = () => {
       { month: 'Apr', revenue: 5200, orders: 62 },
       { month: 'May', revenue: 5800, orders: 68 },
       { month: 'Jun', revenue: 6200, orders: 72 }
-    ],
-    'Cafe Delight': [
-      { month: 'Jan', revenue: 2800, orders: 35 },
-      { month: 'Feb', revenue: 3200, orders: 40 },
-      { month: 'Mar', revenue: 3600, orders: 48 },
-      { month: 'Apr', revenue: 4000, orders: 55 },
-      { month: 'May', revenue: 4400, orders: 62 },
-      { month: 'Jun', revenue: 4800, orders: 68 }
-    ],
-    'Snack Hub': [
-      { month: 'Jan', revenue: 2200, orders: 25 },
-      { month: 'Feb', revenue: 2600, orders: 30 },
-      { month: 'Mar', revenue: 3000, orders: 38 },
-      { month: 'Apr', revenue: 3400, orders: 45 },
-      { month: 'May', revenue: 3800, orders: 52 },
-      { month: 'Jun', revenue: 4200, orders: 58 }
-    ],
-    'Green Bowl': [
-      { month: 'Jan', revenue: 3000, orders: 30 },
-      { month: 'Feb', revenue: 3400, orders: 35 },
-      { month: 'Mar', revenue: 3800, orders: 42 },
-      { month: 'Apr', revenue: 4200, orders: 48 },
-      { month: 'May', revenue: 4600, orders: 55 },
-      { month: 'Jun', revenue: 5000, orders: 62 }
-    ],
-    'Pizza Point': [
-      { month: 'Jan', revenue: 3500, orders: 40 },
-      { month: 'Feb', revenue: 3900, orders: 45 },
-      { month: 'Mar', revenue: 4300, orders: 52 },
-      { month: 'Apr', revenue: 4700, orders: 58 },
-      { month: 'May', revenue: 5100, orders: 65 },
-      { month: 'Jun', revenue: 5500, orders: 70 }
-    ],
-    'Tea Time': [
-      { month: 'Jan', revenue: 1800, orders: 22 },
-      { month: 'Feb', revenue: 2100, orders: 26 },
-      { month: 'Mar', revenue: 2400, orders: 32 },
-      { month: 'Apr', revenue: 2700, orders: 38 },
-      { month: 'May', revenue: 3000, orders: 44 },
-      { month: 'Jun', revenue: 3300, orders: 50 }
     ]
   };
 
@@ -92,17 +58,6 @@ const DashboardOverview = () => {
     }
     return vendorSpecificData[selectedVendor] || allVendorsData;
   };
-
-  // Calculate totals based on current data
-  const currentData = getCurrentData();
-  const totalRevenue = currentData.reduce((sum, item) => sum + item.revenue, 0);
-  const totalOrders = currentData.reduce((sum, item) => sum + item.orders, 0);
-
-  const stats = [
-    { title: 'Total Revenue', value: `₹${totalRevenue.toLocaleString()}`, change: '+15.3%', icon: DollarSign, color: 'text-green-600', bgColor: 'bg-green-100' },
-    { title: 'Total Orders', value: totalOrders.toLocaleString(), change: '+12.5%', icon: ShoppingCart, color: 'text-blue-600', bgColor: 'bg-blue-100' },
-    { title: 'Total Vendors', value: '8', change: '+2', icon: Store, color: 'text-purple-600', bgColor: 'bg-purple-100' }
-  ];
 
   const vendorTypeData = [
     { name: 'Healthy Food', value: 2, color: '#10b981' },
@@ -175,10 +130,10 @@ const DashboardOverview = () => {
       >
         <Card>
           <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center justify-between">
               <CardTitle className="text-xl font-semibold">Revenue & Orders Trend</CardTitle>
               <select 
-                className="p-2 border rounded-md text-sm max-w-xs"
+                className="p-2 border rounded-md text-sm"
                 value={selectedVendor}
                 onChange={(e) => setSelectedVendor(e.target.value)}
               >
@@ -191,28 +146,21 @@ const DashboardOverview = () => {
           <CardContent>
             <ResponsiveContainer width="100%" height={400}>
               <LineChart data={getCurrentData()}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
-                <XAxis dataKey="month" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#ffffff', 
-                    border: '1px solid #e5e7eb', 
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }} 
-                />
-                <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} name="Revenue (₹)" dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }} />
-                <Line type="monotone" dataKey="orders" stroke="#10b981" strokeWidth={3} name="Orders" dot={{ fill: '#10b981', strokeWidth: 2, r: 6 }} />
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} name="Revenue (₹)" />
+                <Line type="monotone" dataKey="orders" stroke="#10b981" strokeWidth={3} name="Orders" />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* Two Side-by-Side Charts - Reordered */}
+      {/* Two Side-by-Side Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Vendor Distribution by Type - First */}
+        {/* Vendor Distribution by Type */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -253,7 +201,7 @@ const DashboardOverview = () => {
           </Card>
         </motion.div>
 
-        {/* Distribution by Location - Second */}
+        {/* Distribution by Location */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -266,31 +214,22 @@ const DashboardOverview = () => {
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={locationData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
+                  <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
                     dataKey="name" 
                     tick={false}
                     tickFormatter={() => ''}
                   />
-                  <YAxis domain={[0, 'dataMax']} tickCount={4} stroke="#6b7280" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#ffffff', 
-                      border: '1px solid #e5e7eb', 
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                    }} 
-                  />
-                  <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <YAxis domain={[0, 'dataMax']} tickCount={4} />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="#3b82f6" />
                 </BarChart>
               </ResponsiveContainer>
               <div className="flex flex-wrap justify-center gap-2 mt-4">
                 {locationData.map((entry, index) => (
                   <div key={index} className="flex items-center space-x-1">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
-                    <span className="text-xs text-gray-600 text-center">
-                      {entry.name.length > 15 ? `Location ${index + 1}` : entry.name} ({entry.value})
-                    </span>
+                    <span className="text-xs text-gray-600">{entry.name} ({entry.value})</span>
                   </div>
                 ))}
               </div>

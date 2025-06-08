@@ -26,9 +26,9 @@ const HeroSection = () => {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.2, duration: 0.8 }}
           >
-            <span className="text-blue-600">Hungry?</span>{' '}
-            <span className="text-green-600">Tired in</span>{' '}
-            <span className="text-blue-600">queues?</span>
+            Welcome to{' '}
+            <span className="text-blue-600">Bites</span>{' '}
+            <span className="text-green-600">Space</span>
           </motion.h1>
           
           <motion.p
@@ -38,7 +38,7 @@ const HeroSection = () => {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.4, duration: 0.8 }}
           >
-            Your office cafeteria, revolutionized. Bites Space brings convenience to your fingertips, connecting you with your favorite stalls and making order management seamless. Eat smart, skip the wait.
+            Your ultimate cafeteria destination at Cognizant. Discover amazing flavors, connect with colleagues, and make every meal memorable.
           </motion.p>
           
           <motion.div
@@ -48,13 +48,22 @@ const HeroSection = () => {
             transition={{ delay: 0.6, duration: 0.8 }}
           >
             <motion.button
-              className="bg-green-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-blue-600 transition-all duration-300 flex items-center justify-center group shadow-lg hover:shadow-xl"
+              className="bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-blue-700 transition-all duration-300 flex items-center justify-center group shadow-lg hover:shadow-xl"
               style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
             >
-              Order Now
+              Explore Menu
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+            </motion.button>
+            
+            <motion.button
+              className="border-2 border-green-600 text-green-600 px-8 py-4 rounded-full text-lg font-semibold hover:bg-green-600 hover:text-white transition-all duration-300 shadow-lg hover:shadow-xl"
+              style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Learn More
             </motion.button>
           </motion.div>
         </motion.div>
