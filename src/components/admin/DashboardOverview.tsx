@@ -1,16 +1,17 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Store, Users, ShoppingCart, TrendingUp, DollarSign, MapPin } from 'lucide-react';
+import { Store, ShoppingCart, TrendingUp, DollarSign, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 
 const DashboardOverview = () => {
+  const [selectedVendor, setSelectedVendor] = useState('All Vendors');
+
   const stats = [
     { title: 'Total Revenue', value: '₹2,45,890', change: '+15.3%', icon: DollarSign, color: 'text-green-600', bgColor: 'bg-green-100' },
     { title: 'Total Orders', value: '1,847', change: '+12.5%', icon: ShoppingCart, color: 'text-blue-600', bgColor: 'bg-blue-100' },
-    { title: 'Active Vendors', value: '8', change: '+2', icon: Store, color: 'text-purple-600', bgColor: 'bg-purple-100' },
-    { title: 'Total Users', value: '523', change: '+18.2%', icon: Users, color: 'text-orange-600', bgColor: 'bg-orange-100' }
+    { title: 'Total Vendors', value: '8', change: '+2', icon: Store, color: 'text-purple-600', bgColor: 'bg-purple-100' }
   ];
 
   const revenueData = [
@@ -23,11 +24,10 @@ const DashboardOverview = () => {
   ];
 
   const vendorTypeData = [
-    { name: 'Healthy Food', value: 30, color: '#10b981' },
+    { name: 'Healthy Food', value: 25, color: '#10b981' },
     { name: 'Fast Food', value: 25, color: '#3b82f6' },
-    { name: 'Cafe & Beverages', value: 20, color: '#8b5cf6' },
-    { name: 'Multi Cuisine', value: 15, color: '#f59e0b' },
-    { name: 'Snacks', value: 10, color: '#ef4444' }
+    { name: 'Cafe & Beverages', value: 25, color: '#8b5cf6' },
+    { name: 'Multi Cuisine', value: 25, color: '#f59e0b' }
   ];
 
   const locationData = [
@@ -37,12 +37,7 @@ const DashboardOverview = () => {
     { location: 'SRZ SDB1 Floor 2 Wing B', vendors: 1, color: '#f59e0b' }
   ];
 
-  const recentOrders = [
-    { id: '#1847', customer: 'John Doe', vendor: 'Healthy Bites', amount: '₹245', status: 'Completed', time: '10:30 AM' },
-    { id: '#1846', customer: 'Jane Smith', vendor: 'Fast Corner', amount: '₹180', status: 'Processing', time: '10:15 AM' },
-    { id: '#1845', customer: 'Mike Johnson', vendor: 'Cafe Delight', amount: '₹320', status: 'Completed', time: '09:45 AM' },
-    { id: '#1844', customer: 'Sarah Wilson', vendor: 'Snack Hub', amount: '₹150', status: 'Pending', time: '09:30 AM' }
-  ];
+  const vendors = ['All Vendors', 'Healthy Bites', 'Fast Corner', 'Cafe Delight', 'Spice Paradise', 'Snack Hub', 'Green Garden', 'Curry Express', 'Coffee Corner'];
 
   return (
     <div className="space-y-8">
@@ -61,8 +56,8 @@ const DashboardOverview = () => {
         </p>
       </motion.div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Main Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
@@ -91,39 +86,50 @@ const DashboardOverview = () => {
         })}
       </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Revenue Trend */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Card>
-            <CardHeader>
+      {/* Revenue and Orders Trend - Big Chart */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
               <CardTitle className="flex items-center space-x-2">
                 <TrendingUp className="w-5 h-5 text-blue-600" />
                 <span>Revenue & Orders Trend</span>
               </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} />
-                  <Line type="monotone" dataKey="orders" stroke="#10b981" strokeWidth={3} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </motion.div>
+              <select 
+                className="p-2 border rounded-md text-sm"
+                value={selectedVendor}
+                onChange={(e) => setSelectedVendor(e.target.value)}
+              >
+                {vendors.map(vendor => (
+                  <option key={vendor} value={vendor}>{vendor}</option>
+                ))}
+              </select>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart data={revenueData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} name="Revenue (₹)" />
+                <Line type="monotone" dataKey="orders" stroke="#10b981" strokeWidth={3} name="Orders" />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </motion.div>
 
+      {/* Two Charts Side by Side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Vendor Distribution by Type */}
         <motion.div
-          initial={{ opacity: 0, x: 20 }}
+          initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.5 }}
         >
@@ -131,7 +137,7 @@ const DashboardOverview = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Store className="w-5 h-5 text-purple-600" />
-                <span>Vendor Distribution by Type</span>
+                <span>Distribution by Type</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -150,90 +156,56 @@ const DashboardOverview = () => {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip formatter={(value) => [`${value}%`, 'Percentage']} />
                 </PieChart>
               </ResponsiveContainer>
+              <div className="flex flex-wrap justify-center gap-2 mt-4">
+                {vendorTypeData.map((entry, index) => (
+                  <div key={index} className="flex items-center space-x-1">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
+                    <span className="text-xs text-gray-600">{entry.name}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Distribution by Location */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <MapPin className="w-5 h-5 text-orange-600" />
+                <span>Distribution by Location</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={locationData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="location" tick={false} />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="vendors" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+              <div className="flex flex-wrap justify-center gap-2 mt-4">
+                {locationData.map((entry, index) => (
+                  <div key={index} className="flex items-center space-x-1">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
+                    <span className="text-xs text-gray-600">{entry.location}</span>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </motion.div>
       </div>
-
-      {/* Location Distribution */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <MapPin className="w-5 h-5 text-orange-600" />
-              <span>Vendor Distribution by Location</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={locationData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="location" angle={-45} textAnchor="end" height={100} />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="vendors" fill="#3b82f6" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Recent Orders */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <ShoppingCart className="w-5 h-5 text-green-600" />
-              <span>Recent Orders</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentOrders.map((order, index) => (
-                <motion.div
-                  key={order.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.8 + index * 0.1 }}
-                >
-                  <div className="flex items-center space-x-4">
-                    <div>
-                      <p className="font-medium text-gray-900">{order.id}</p>
-                      <p className="text-sm text-gray-600">{order.customer}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{order.vendor}</p>
-                      <p className="text-sm text-gray-600">{order.time}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <p className="font-medium">{order.amount}</p>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      order.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                      order.status === 'Processing' ? 'bg-blue-100 text-blue-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {order.status}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
     </div>
   );
 };

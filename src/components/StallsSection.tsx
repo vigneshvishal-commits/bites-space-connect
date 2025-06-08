@@ -11,24 +11,44 @@ const StallsSection = () => {
 
   const stalls = [
     {
-      name: "Divya Fried Chicken",
-      image: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-      specialty: "Crispy & Delicious"
+      name: "Healthy Bites",
+      image: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+      specialty: "Healthy Food"
     },
     {
-      name: "Sasank Pizzas",
-      image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-      specialty: "Authentic Italian"
+      name: "Fast Corner",
+      image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+      specialty: "Fast Food"
     },
     {
-      name: "Siva Sankar Bhavan",
-      image: "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-      specialty: "Traditional Flavors"
+      name: "Cafe Delight",
+      image: "https://images.unsplash.com/photo-1559925393-8be0ec4767c8?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+      specialty: "Cafe & Beverages"
     },
     {
-      name: "Abi Sweets",
+      name: "Spice Paradise",
+      image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+      specialty: "Multi Cuisine"
+    },
+    {
+      name: "Snack Hub",
       image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-      specialty: "Sweet Delights"
+      specialty: "Snacks"
+    },
+    {
+      name: "Green Garden",
+      image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+      specialty: "Healthy Food"
+    },
+    {
+      name: "Curry Express",
+      image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+      specialty: "Multi Cuisine"
+    },
+    {
+      name: "Coffee Corner",
+      image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+      specialty: "Cafe & Beverages"
     }
   ];
 
@@ -52,92 +72,20 @@ const StallsSection = () => {
           <motion.div
             className="flex space-x-8"
             animate={{
-              x: [0, -(320 + 32) * stalls.length] // 320px width + 32px gap
+              x: [0, -(320 + 32) * stalls.length]
             }}
             transition={{
-              duration: 20,
+              duration: 25,
               repeat: Infinity,
               ease: "linear",
               repeatType: "loop"
             }}
-            style={{ width: `${(320 + 32) * stalls.length * 3}px` }} // Triple width for seamless loop
+            style={{ width: `${(320 + 32) * stalls.length * 3}px` }}
           >
-            {/* First set */}
-            {stalls.map((stall, index) => (
+            {/* Triple the stalls for seamless loop */}
+            {[...stalls, ...stalls, ...stalls].map((stall, index) => (
               <motion.div
-                key={`first-${index}`}
-                className="flex-shrink-0 w-80 bg-white rounded-3xl shadow-xl overflow-hidden group cursor-pointer border border-blue-200"
-                whileHover={{ 
-                  scale: 1.05,
-                  y: -10,
-                  boxShadow: "0 25px 50px rgba(37, 99, 235, 0.2)",
-                  borderColor: "#2563eb"
-                }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="relative overflow-hidden">
-                  <img
-                    src={stall.image}
-                    alt={stall.name}
-                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                  <div className="absolute bottom-4 left-4 text-white">
-                    <span className="text-sm font-medium bg-blue-600 px-3 py-1 rounded-full" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                      {stall.specialty}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="p-6">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors duration-300" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                    {stall.name}
-                  </h3>
-                  <p className="text-gray-600" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Fresh, quality ingredients delivered daily</p>
-                </div>
-              </motion.div>
-            ))}
-            
-            {/* Second set for seamless loop */}
-            {stalls.map((stall, index) => (
-              <motion.div
-                key={`second-${index}`}
-                className="flex-shrink-0 w-80 bg-white rounded-3xl shadow-xl overflow-hidden group cursor-pointer border border-blue-200"
-                whileHover={{ 
-                  scale: 1.05,
-                  y: -10,
-                  boxShadow: "0 25px 50px rgba(37, 99, 235, 0.2)",
-                  borderColor: "#2563eb"
-                }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="relative overflow-hidden">
-                  <img
-                    src={stall.image}
-                    alt={stall.name}
-                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                  <div className="absolute bottom-4 left-4 text-white">
-                    <span className="text-sm font-medium bg-blue-600 px-3 py-1 rounded-full" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                      {stall.specialty}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="p-6">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors duration-300" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                    {stall.name}
-                  </h3>
-                  <p className="text-gray-600" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Fresh, quality ingredients delivered daily</p>
-                </div>
-              </motion.div>
-            ))}
-
-            {/* Third set for extra seamless transition */}
-            {stalls.map((stall, index) => (
-              <motion.div
-                key={`third-${index}`}
+                key={`${stall.name}-${index}`}
                 className="flex-shrink-0 w-80 bg-white rounded-3xl shadow-xl overflow-hidden group cursor-pointer border border-blue-200"
                 whileHover={{ 
                   scale: 1.05,

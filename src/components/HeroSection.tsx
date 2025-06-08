@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
@@ -123,7 +122,6 @@ const HeroSection = () => {
               whileTap={{ scale: 0.95 }}
               onClick={() => console.log('Order Now clicked!')}
             >
-              {/* Background animation on hover */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-green-600 via-blue-700 to-green-500"
                 initial={{ x: '-100%' }}
@@ -134,7 +132,6 @@ const HeroSection = () => {
               <span className="relative z-10">Order Now</span>
               <ArrowRight className="relative z-10 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
               
-              {/* Enhanced pulse effect */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-blue-400 to-green-400 rounded-full opacity-30"
                 animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0, 0.3] }}
@@ -143,7 +140,7 @@ const HeroSection = () => {
             </motion.button>
           </motion.div>
           
-          {/* Hero Image - Multi-cuisine Food with Organic Shape */}
+          {/* Hero Image - Office Cafeteria */}
           <motion.div
             className="relative"
             initial={{ opacity: 0, x: 50 }}
@@ -151,7 +148,6 @@ const HeroSection = () => {
             transition={{ duration: 0.8, delay: 0.3 }}
           >
             <div className="relative z-10">
-              {/* Organic blob background */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-br from-blue-400/20 via-green-400/15 to-blue-500/20 rounded-[50px] transform rotate-6"
                 style={{
@@ -168,7 +164,6 @@ const HeroSection = () => {
                 }}
               />
               
-              {/* Floating image container */}
               <motion.div
                 className="relative overflow-hidden rounded-[40px] shadow-2xl"
                 style={{
@@ -178,15 +173,14 @@ const HeroSection = () => {
                 transition={{ duration: 0.3 }}
               >
                 <img
-                  src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Multi-cuisine food platter with variety of dishes"
+                  src="https://images.unsplash.com/photo-1544148103-0773bf10d330?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Modern office cafeteria with employees dining"
                   className="w-full h-[500px] object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
               </motion.div>
             </div>
             
-            {/* Enhanced Floating Elements */}
             <motion.div
               className="absolute -top-4 -left-4 w-20 h-20 bg-gradient-to-r from-green-500/30 to-blue-500/30 rounded-full blur-sm"
               animate={{ 

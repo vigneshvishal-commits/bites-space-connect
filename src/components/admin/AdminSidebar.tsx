@@ -8,8 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   User,
-  LogOut,
-  Settings
+  LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -38,10 +37,18 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const handleLogout = () => {
     setShowLogoutConfirm(false);
     setShowProfile(false);
-    // Add logout animation here
     setTimeout(() => {
       window.location.href = '/';
     }, 500);
+  };
+
+  const handleProfileClick = () => {
+    if (collapsed) {
+      setCollapsed(false);
+      setTimeout(() => setShowProfile(true), 300);
+    } else {
+      setShowProfile(!showProfile);
+    }
   };
 
   return (
@@ -59,7 +66,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
           <div className="flex items-center justify-between">
             {!collapsed && (
               <motion.div
-                className="flex flex-col items-center space-y-3"
+                className="flex flex-col items-center space-y-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
@@ -67,9 +74,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 <img 
                   src="/lovable-uploads/b3787bd3-143a-4cb2-9fdf-8228781e5bf4.png" 
                   alt="Bites Space" 
-                  className="w-16 h-16"
+                  className="w-24 h-24 object-contain"
                 />
-                <span className="font-bold text-xl text-gray-800" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                <span className="font-bold text-2xl text-gray-800" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                   Bites Space
                 </span>
               </motion.div>
@@ -78,7 +85,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
               <img 
                 src="/lovable-uploads/b3787bd3-143a-4cb2-9fdf-8228781e5bf4.png" 
                 alt="Bites Space" 
-                className="w-12 h-12 mx-auto"
+                className="w-16 h-16 mx-auto object-contain"
               />
             )}
             <button
@@ -126,15 +133,15 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         {/* Profile Section in Footer */}
         <div className="border-t border-gray-200 p-4">
           <motion.button
-            onClick={() => setShowProfile(!showProfile)}
+            onClick={handleProfileClick}
             className={`w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors ${
               showProfile ? 'bg-gray-100' : ''
             }`}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-              <User className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+              <User className="w-7 h-7 text-white" />
             </div>
             {!collapsed && (
               <div className="text-left">
@@ -144,30 +151,40 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
             )}
           </motion.button>
 
-          {/* Profile Details */}
           <AnimatePresence>
             {showProfile && !collapsed && (
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
+                initial={{ opacity: 0, height: 0, y: 20 }}
+                animate={{ opacity: 1, height: 'auto', y: 0 }}
+                exit={{ opacity: 0, height: 0, y: 20 }}
                 transition={{ duration: 0.3 }}
-                className="mt-3 p-3 bg-gray-50 rounded-lg"
+                className="mt-3 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200"
               >
-                <div className="space-y-2 text-sm">
-                  <p><span className="font-medium">Name:</span> Administrator</p>
-                  <p><span className="font-medium">Username:</span> EatInCognizant</p>
-                  <p><span className="font-medium">Role:</span> System Admin</p>
-                  <p><span className="font-medium">Last Login:</span> Today</p>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
+                      <User className="w-9 h-9 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800">Administrator</p>
+                      <p className="text-gray-600">System Admin</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <p><span className="font-medium text-gray-700">Name:</span> Administrator</p>
+                    <p><span className="font-medium text-gray-700">Username:</span> EatInCognizant</p>
+                    <p><span className="font-medium text-gray-700">Role:</span> System Admin</p>
+                    <p><span className="font-medium text-gray-700">Last Login:</span> Today</p>
+                  </div>
+                  <Button
+                    onClick={() => setShowLogoutConfirm(true)}
+                    variant="outline"
+                    className="w-full mt-4 text-red-600 border-red-300 hover:bg-red-50"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </Button>
                 </div>
-                <Button
-                  onClick={() => setShowLogoutConfirm(true)}
-                  variant="outline"
-                  className="w-full mt-3 text-red-600 border-red-300 hover:bg-red-50"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </Button>
               </motion.div>
             )}
           </AnimatePresence>
