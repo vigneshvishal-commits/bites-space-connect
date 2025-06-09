@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Eye, Edit, Trash2, ToggleLeft, ToggleRight, Key, RefreshCw, Send, CheckCircle } from 'lucide-react';
@@ -6,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/components/ui/use-toast';
+import emailjs from '@emailjs/browser';
 import VendorSearch from './VendorSearch';
 
 const VendorManagement = () => {
@@ -21,6 +24,8 @@ const VendorManagement = () => {
   const [locationFilter, setLocationFilter] = useState('all');
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [showSuccess, setShowSuccess] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     outletName: '',
     vendorName: '',
@@ -165,42 +170,81 @@ const VendorManagement = () => {
         outletType: 'Healthy Food'
       });
       setShowAddForm(false);
-      setShowSuccess('Outlet saved successfully!');
-      setTimeout(() => setShowSuccess(''), 3000);
+      toast({
+        title: "Success",
+        description: "Outlet saved successfully!",
+      });
     }
   };
 
-  const handleSendCredentials = () => {
-    setShowCredentialsModal(false);
-    setShowSuccess('Credentials sent successfully!');
-    setTimeout(() => setShowSuccess(''), 3000);
+  const handleUpdateVendor = (e) => {
+    e.preventDefault();
+    if (window.confirm('Are you sure you want to update this vendor?')) {
+      setVendors(vendors.map(vendor => 
+        vendor.id === selectedVendor.id 
+          ? { ...vendor, ...formData }
+          : vendor
+      ));
+      setShowEditModal(false);
+      setSelectedVendor(null);
+      toast({
+        title: "Success",
+        description: "Vendor updated successfully!",
+      });
+    }
+  };
+
+  const sendCredentialsEmail = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Initialize EmailJS with your public key
+      emailjs.init("YOUR_PUBLIC_KEY"); // Replace with your actual EmailJS public key
+      
+      const templateParams = {
+        to_email: credentials.username,
+        vendor_name: selectedVendor.vendorName,
+        outlet_name: selectedVendor.outletName,
+        username: credentials.username,
+        password: credentials.password,
+        from_name: "Bites Space Admin"
+      };
+
+      await emailjs.send(
+        "YOUR_SERVICE_ID", // Replace with your EmailJS service ID
+        "YOUR_TEMPLATE_ID", // Replace with your EmailJS template ID
+        templateParams
+      );
+
+      setShowCredentialsModal(false);
+      toast({
+        title: "Success",
+        description: "Credentials sent successfully to vendor's email!",
+      });
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send credentials. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDeleteVendor = () => {
     setVendors(vendors.filter(v => v.id !== selectedVendor.id));
     setShowDeleteConfirm(false);
     setSelectedVendor(null);
-    setShowSuccess('Vendor deleted successfully!');
-    setTimeout(() => setShowSuccess(''), 3000);
+    toast({
+      title: "Success",
+      description: "Vendor deleted successfully!",
+    });
   };
 
   return (
     <div className="space-y-6">
-      {/* Success Message */}
-      <AnimatePresence>
-        {showSuccess && (
-          <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2"
-          >
-            <CheckCircle className="w-5 h-5" />
-            <span>{showSuccess}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -374,7 +418,14 @@ const VendorManagement = () => {
                           variant="outline"
                           onClick={() => {
                             setSelectedVendor(vendor);
-                            setFormData(vendor);
+                            setFormData({
+                              outletName: vendor.outletName,
+                              vendorName: vendor.vendorName,
+                              vendorEmail: vendor.vendorEmail,
+                              location: vendor.location,
+                              contact: vendor.contact,
+                              outletType: vendor.outletType
+                            });
                             setShowEditModal(true);
                           }}
                           title="Edit Vendor"
@@ -418,9 +469,9 @@ const VendorManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Add/Edit Vendor Modal */}
+      {/* Add Vendor Modal */}
       <AnimatePresence>
-        {(showAddForm || showEditModal) && (
+        {showAddForm && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -433,9 +484,7 @@ const VendorManagement = () => {
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-white rounded-lg p-6 w-full max-w-2xl shadow-xl"
             >
-              <h2 className="text-2xl font-semibold mb-6">
-                {showAddForm ? 'Add New Food Outlet' : 'Edit Vendor Details'}
-              </h2>
+              <h2 className="text-2xl font-semibold mb-6">Add New Food Outlet</h2>
               <form onSubmit={handleAddVendor}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div>
@@ -512,7 +561,6 @@ const VendorManagement = () => {
                     variant="outline" 
                     onClick={() => {
                       setShowAddForm(false);
-                      setShowEditModal(false);
                       setFormData({
                         outletName: '',
                         vendorName: '',
@@ -530,7 +578,118 @@ const VendorManagement = () => {
                     type="submit"
                     className="flex-1 bg-green-600 hover:bg-green-700"
                   >
-                    {showAddForm ? 'Save' : 'Update'}
+                    Save
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Vendor Modal */}
+      <AnimatePresence>
+        {showEditModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-lg p-6 w-full max-w-2xl shadow-xl"
+            >
+              <h2 className="text-2xl font-semibold mb-6">Edit Vendor Details</h2>
+              <form onSubmit={handleUpdateVendor}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <Label className="block text-sm font-medium mb-2">Outlet Name *</Label>
+                    <Input 
+                      placeholder="Enter outlet name" 
+                      value={formData.outletName}
+                      onChange={(e) => setFormData({...formData, outletName: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label className="block text-sm font-medium mb-2">Vendor Name *</Label>
+                    <Input 
+                      placeholder="Enter vendor name" 
+                      value={formData.vendorName}
+                      onChange={(e) => setFormData({...formData, vendorName: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label className="block text-sm font-medium mb-2">Vendor Email *</Label>
+                    <Input 
+                      type="email"
+                      placeholder="Enter vendor email" 
+                      value={formData.vendorEmail}
+                      onChange={(e) => setFormData({...formData, vendorEmail: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label className="block text-sm font-medium mb-2">Contact Number *</Label>
+                    <Input 
+                      placeholder="Enter contact number" 
+                      value={formData.contact}
+                      onChange={(e) => setFormData({...formData, contact: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label className="block text-sm font-medium mb-2">Location *</Label>
+                    <select 
+                      className="w-full p-2 border rounded-md"
+                      value={formData.location}
+                      onChange={(e) => setFormData({...formData, location: e.target.value})}
+                      required
+                    >
+                      <option value="">Select Location</option>
+                      <option value="SRZ SDB Floor 1 Wing A">SRZ SDB Floor 1 Wing A</option>
+                      <option value="SRZ SDB Floor 1 Wing B">SRZ SDB Floor 1 Wing B</option>
+                      <option value="SRZ SDB2 Floor 2 Wing A">SRZ SDB2 Floor 2 Wing A</option>
+                      <option value="SRZ SDB1 Floor 2 Wing B">SRZ SDB1 Floor 2 Wing B</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label className="block text-sm font-medium mb-2">Outlet Type *</Label>
+                    <select 
+                      className="w-full p-2 border rounded-md"
+                      value={formData.outletType}
+                      onChange={(e) => setFormData({...formData, outletType: e.target.value})}
+                    >
+                      <option value="Healthy Food">Healthy Food</option>
+                      <option value="Fast Food">Fast Food</option>
+                      <option value="Cafe and Beverages">Cafe and Beverages</option>
+                      <option value="Multi Cuisine">Multi Cuisine</option>
+                      <option value="Snack and Refreshment">Snack and Refreshment</option>
+                      <option value="Others">Others</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex space-x-4">
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setSelectedVendor(null);
+                    }}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit"
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                  >
+                    Update
                   </Button>
                 </div>
               </form>
@@ -591,11 +750,12 @@ const VendorManagement = () => {
                   Cancel
                 </Button>
                 <Button
-                  onClick={handleSendCredentials}
+                  onClick={sendCredentialsEmail}
+                  disabled={isLoading}
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
                 >
                   <Send className="w-4 h-4 mr-2" />
-                  Send Credentials
+                  {isLoading ? 'Sending...' : 'Send Credentials'}
                 </Button>
               </div>
             </motion.div>
