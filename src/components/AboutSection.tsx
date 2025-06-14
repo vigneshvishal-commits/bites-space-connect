@@ -9,9 +9,65 @@ const AboutSection = () => {
     threshold: 0.1
   });
 
+  // Floating ball animation variants
+  const ballVariants = {
+    animate: (i: number) => ({
+      y: [0, -25, 15, -15, 0],
+      x: [0, 10, -15, 8, 0],
+      scale: [1, 1.1, 0.9, 1.2, 1],
+      rotate: [0, 30, -45, 60, 0],
+      transition: {
+        duration: 7 + i * 0.8,
+        repeat: Infinity,
+        delay: i * 0.6,
+        ease: "easeInOut"
+      }
+    })
+  };
+
   return (
-    <section id="about" className="py-20 bg-white" ref={ref}>
-      <div className="container mx-auto px-4">
+    <section id="about" className="py-20 bg-white relative overflow-hidden" ref={ref}>
+      {/* Animated Background Balls */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Left side balls */}
+        {[...Array(8)].map((_, i) => (
+          <motion.div
+            key={`left-${i}`}
+            className={`absolute rounded-full ${
+              i % 4 === 0 ? 'w-5 h-5 bg-blue-400/25' : 
+              i % 4 === 1 ? 'w-3 h-3 bg-green-400/30' :
+              i % 4 === 2 ? 'w-4 h-4 bg-purple-300/20' : 'w-6 h-6 bg-orange-400/25'
+            }`}
+            style={{
+              left: `${3 + i * 5}%`,
+              top: `${10 + (i % 4) * 20}%`,
+            }}
+            variants={ballVariants}
+            animate="animate"
+            custom={i}
+          />
+        ))}
+        
+        {/* Right side balls */}
+        {[...Array(10)].map((_, i) => (
+          <motion.div
+            key={`right-${i}`}
+            className={`absolute rounded-full ${
+              i % 3 === 0 ? 'w-4 h-4 bg-pink-300/30' : 
+              i % 3 === 1 ? 'w-5 h-5 bg-teal-300/25' : 'w-3 h-3 bg-indigo-400/35'
+            }`}
+            style={{
+              right: `${2 + i * 7}%`,
+              top: `${5 + (i % 5) * 15}%`,
+            }}
+            variants={ballVariants}
+            animate="animate"
+            custom={i + 8}
+          />
+        ))}
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -20,12 +76,18 @@ const AboutSection = () => {
             className="order-2 lg:order-1"
           >
             <div className="relative">
-              <img
-                src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                alt="Office cafeteria with colleagues enjoying food and laptops on table"
-                className="rounded-3xl shadow-2xl w-full object-cover h-[500px]"
-              />
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-green-600/10 rounded-3xl" />
+              {/* Modern polygon shape for about image */}
+              <div className="relative overflow-hidden" style={{
+                clipPath: 'polygon(0% 15%, 85% 0%, 100% 85%, 15% 100%)',
+                height: '500px'
+              }}>
+                <img
+                  src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Office cafeteria with colleagues enjoying food and laptops on table"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-green-600/10" />
+              </div>
             </div>
           </motion.div>
           

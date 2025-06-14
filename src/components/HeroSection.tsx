@@ -31,17 +31,18 @@ const HeroSection = () => {
       {/* Enhanced Animated Background Balls - More scattered throughout */}
       <div className="absolute inset-0 pointer-events-none">
         {/* Top area balls */}
-        {[...Array(12)].map((_, i) => (
+        {[...Array(15)].map((_, i) => (
           <motion.div
             key={`top-${i}`}
             className={`absolute rounded-full ${
-              i % 4 === 0 ? 'w-3 h-3 bg-blue-400/20' : 
-              i % 4 === 1 ? 'w-5 h-5 bg-green-400/25' :
-              i % 4 === 2 ? 'w-4 h-4 bg-orange-300/30' : 'w-2 h-2 bg-purple-400/20'
+              i % 5 === 0 ? 'w-4 h-4 bg-blue-400/30' : 
+              i % 5 === 1 ? 'w-6 h-6 bg-green-400/25' :
+              i % 5 === 2 ? 'w-3 h-3 bg-orange-300/35' : 
+              i % 5 === 3 ? 'w-5 h-5 bg-purple-400/20' : 'w-2 h-2 bg-pink-400/40'
             }`}
             style={{
-              left: `${5 + i * 8}%`,
-              top: `${5 + (i % 4) * 15}%`,
+              left: `${2 + i * 6}%`,
+              top: `${3 + (i % 6) * 12}%`,
             }}
             variants={ballVariants}
             animate="animate"
@@ -50,37 +51,39 @@ const HeroSection = () => {
         ))}
         
         {/* Middle area balls */}
-        {[...Array(10)].map((_, i) => (
+        {[...Array(12)].map((_, i) => (
           <motion.div
             key={`middle-${i}`}
             className={`absolute rounded-full ${
-              i % 3 === 0 ? 'w-6 h-6 bg-pink-300/20' : 
-              i % 3 === 1 ? 'w-3 h-3 bg-indigo-300/25' : 'w-4 h-4 bg-yellow-300/30'
+              i % 4 === 0 ? 'w-7 h-7 bg-rose-300/25' : 
+              i % 4 === 1 ? 'w-3 h-3 bg-indigo-300/30' : 
+              i % 4 === 2 ? 'w-5 h-5 bg-yellow-300/35' : 'w-4 h-4 bg-teal-300/25'
             }`}
             style={{
-              right: `${8 + i * 9}%`,
-              top: `${40 + (i % 3) * 20}%`,
+              right: `${5 + i * 8}%`,
+              top: `${35 + (i % 4) * 18}%`,
             }}
             variants={ballVariants}
             animate="animate"
-            custom={i + 12}
+            custom={i + 15}
           />
         ))}
         
         {/* Bottom area balls */}
-        {[...Array(8)].map((_, i) => (
+        {[...Array(10)].map((_, i) => (
           <motion.div
             key={`bottom-${i}`}
             className={`absolute rounded-full ${
-              i % 2 === 0 ? 'w-5 h-5 bg-teal-300/25' : 'w-3 h-3 bg-rose-300/20'
+              i % 3 === 0 ? 'w-6 h-6 bg-cyan-300/30' : 
+              i % 3 === 1 ? 'w-4 h-4 bg-emerald-300/25' : 'w-3 h-3 bg-violet-300/35'
             }`}
             style={{
-              left: `${10 + i * 12}%`,
-              bottom: `${5 + (i % 2) * 15}%`,
+              left: `${8 + i * 10}%`,
+              bottom: `${3 + (i % 3) * 12}%`,
             }}
             variants={ballVariants}
             animate="animate"
-            custom={i + 22}
+            custom={i + 27}
           />
         ))}
       </div>
@@ -99,9 +102,9 @@ const HeroSection = () => {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.2, duration: 0.8 }}
           >
-            Welcome to{' '}
-            <span className="text-blue-600">Bites</span>{' '}
-            <span className="text-green-600">Space</span>
+            <span className="text-green-600">Hungry?</span>{' '}
+            <span className="text-gray-800">Hustle in</span>{' '}
+            <span className="text-blue-600">Queues?</span>
           </motion.h1>
           
           <motion.p
@@ -111,7 +114,7 @@ const HeroSection = () => {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.4, duration: 0.8 }}
           >
-            Your ultimate cafeteria destination at Cognizant. Discover amazing flavors, connect with colleagues, and make every meal memorable.
+            Redefining Cafeteria Convenience. Bites Space is not just a digital menu—it's your smart food partner. Designed for modern offices, our platform connects you to your favorite cafeteria stalls, streamlines orders, and eliminates the hassle of queues.
           </motion.p>
           
           <motion.div
@@ -129,15 +132,6 @@ const HeroSection = () => {
               Explore Menu
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
             </motion.button>
-            
-            <motion.button
-              className="border-2 border-green-600 text-green-600 px-8 py-4 rounded-full text-lg font-semibold hover:bg-green-600 hover:text-white transition-all duration-300 shadow-lg hover:shadow-xl"
-              style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Learn More
-            </motion.button>
           </motion.div>
         </motion.div>
         
@@ -148,38 +142,38 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.3 }}
         >
           <div className="relative">
-            {/* Modern blob-shaped container for the first image */}
+            {/* Modern polygon-shaped container for the first image */}
             <motion.div
               className="relative mb-8"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
             >
               <div className="relative overflow-hidden" style={{
-                clipPath: 'polygon(20% 0%, 100% 20%, 80% 100%, 0% 80%)',
+                clipPath: 'polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%)',
                 height: '280px'
               }}>
                 <img
                   src="https://images.unsplash.com/photo-1490818387583-1baba5e638af?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Vibrant multi-cuisine food platter"
+                  alt="Multi-cuisine food platter with various dishes"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-green-600/20" />
               </div>
             </motion.div>
 
-            {/* Modern blob-shaped container for the second image */}
+            {/* Modern polygon-shaped container for the second image */}
             <motion.div
               className="relative"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
             >
               <div className="relative overflow-hidden" style={{
-                clipPath: 'polygon(0% 20%, 80% 0%, 100% 80%, 20% 100%)',
+                clipPath: 'polygon(0% 0%, 75% 0%, 100% 100%, 25% 100%)',
                 height: '320px'
               }}>
                 <img
                   src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Employees dining together in cafeteria"
+                  alt="Employees dining together at cafeteria tables"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-tr from-green-600/20 to-blue-600/20" />

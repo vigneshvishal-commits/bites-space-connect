@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Lock, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, CheckCircle, AlertCircle, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,22 +14,26 @@ const Login = () => {
     username: '',
     password: ''
   });
-  const [isFirstTimeLogin, setIsFirstTimeLogin] = useState(false);
+  const [currentFlow, setCurrentFlow] = useState<'login' | 'first-time-check' | 'password-reset' | 'forgot-password' | 'verify-email'>('login');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState({
     username: '',
-    password: ''
+    password: '',
+    email: ''
   });
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [successType, setSuccessType] = useState<'login' | 'password-change'>('login');
 
   // Check if admin password has been changed before
   const hasAdminChangedPassword = localStorage.getItem('adminPasswordChanged') === 'true';
+  const hasVendorChangedPassword = localStorage.getItem(`vendorPasswordChanged_${credentials.username}`) === 'true';
 
   const validateCredentials = () => {
-    const errors = { username: '', password: '' };
+    const errors = { username: '', password: '', email: '' };
     let isValid = true;
 
     if (!credentials.username.trim()) {
@@ -60,7 +65,7 @@ const Login = () => {
     if (isAdmin && credentials.username === 'EatInCognizant' && credentials.password === 'qwerty12345') {
       // Check if admin needs to change password (first time login only)
       if (!hasAdminChangedPassword) {
-        setIsFirstTimeLogin(true);
+        setCurrentFlow('first-time-check');
         setIsLoading(false);
         return;
       } else {
@@ -72,14 +77,24 @@ const Login = () => {
         }, 1500);
       }
     } else if (!isAdmin && credentials.username && credentials.password) {
-      // For vendor, assume it's first time login requiring password reset
-      setIsFirstTimeLogin(true);
-      setIsLoading(false);
-      return;
+      // Check if vendor needs to change password
+      if (!hasVendorChangedPassword) {
+        setCurrentFlow('first-time-check');
+        setIsLoading(false);
+        return;
+      } else {
+        // Vendor has already changed password, proceed to dashboard
+        setSuccessType('login');
+        setLoginSuccess(true);
+        setTimeout(() => {
+          window.location.href = '/vendor-dashboard';
+        }, 1500);
+      }
     } else {
       setValidationErrors({
         username: 'Invalid credentials',
-        password: 'Invalid credentials'
+        password: 'Invalid credentials',
+        email: ''
       });
     }
     
@@ -92,9 +107,11 @@ const Login = () => {
       setIsLoading(true);
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Mark admin password as changed if this is admin first time login
+      // Mark password as changed
       if (isAdmin) {
         localStorage.setItem('adminPasswordChanged', 'true');
+      } else {
+        localStorage.setItem(`vendorPasswordChanged_${credentials.username}`, 'true');
       }
       
       setSuccessType('password-change');
@@ -106,6 +123,23 @@ const Login = () => {
           window.location.href = '/vendor-dashboard';
         }
       }, 1500);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setCurrentFlow('verify-email');
+    setIsLoading(false);
+  };
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (verificationCode === '123456') { // Mock verification
+      setCurrentFlow('password-reset');
+    } else {
+      setValidationErrors({...validationErrors, email: 'Invalid verification code'});
     }
   };
 
@@ -181,8 +215,8 @@ const Login = () => {
           </h1>
         </motion.div>
 
-        {/* Toggle Buttons - Only show when not in first time login flow */}
-        {!isFirstTimeLogin && (
+        {/* Toggle Buttons - Only show for login flow */}
+        {currentFlow === 'login' && (
           <motion.div
             className="flex bg-white rounded-lg p-1 mb-6 shadow-lg"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -214,7 +248,7 @@ const Login = () => {
 
         {/* Login Card */}
         <motion.div
-          key={isFirstTimeLogin ? 'reset' : (isAdmin ? 'admin' : 'vendor')}
+          key={currentFlow}
           initial={{ opacity: 0, rotateY: 90 }}
           animate={{ opacity: 1, rotateY: 0 }}
           transition={{ duration: 0.6 }}
@@ -222,21 +256,133 @@ const Login = () => {
           <Card className="shadow-xl border-0">
             <CardHeader className="text-center pb-4">
               <CardTitle className="text-2xl font-bold text-gray-800">
-                {isFirstTimeLogin ? (
-                  <>
-                    <span className="block text-sm text-gray-500 mb-1">First Time Login</span>
-                    Reset Your Password
-                  </>
-                ) : (
-                  `${isAdmin ? 'Admin' : 'Vendor'} Login`
-                )}
+                {currentFlow === 'first-time-check' && 'First Time Login Detected'}
+                {currentFlow === 'password-reset' && 'Reset Your Password'}
+                {currentFlow === 'forgot-password' && 'Forgot Password'}
+                {currentFlow === 'verify-email' && 'Verify Your Email'}
+                {currentFlow === 'login' && `${isAdmin ? 'Admin' : 'Vendor'} Login`}
               </CardTitle>
               <p className="text-gray-600 text-sm">
-                {isFirstTimeLogin ? 'Create a new secure password for your account' : 'Enter your credentials to continue'}
+                {currentFlow === 'first-time-check' && 'It looks like this is your first time logging in. Would you like to set a new password?'}
+                {currentFlow === 'password-reset' && 'Create a new secure password for your account'}
+                {currentFlow === 'forgot-password' && 'Enter your email address to receive a verification code'}
+                {currentFlow === 'verify-email' && 'Enter the verification code sent to your email'}
+                {currentFlow === 'login' && 'Enter your credentials to continue'}
               </p>
             </CardHeader>
             <CardContent>
-              {isFirstTimeLogin ? (
+              {currentFlow === 'first-time-check' && (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <p className="text-gray-700 mb-6">This appears to be your first login. For security reasons, we recommend changing your password.</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button 
+                      variant="outline"
+                      className="flex-1 h-12"
+                      onClick={() => {
+                        // Skip password change and proceed to dashboard
+                        if (isAdmin) {
+                          localStorage.setItem('adminPasswordChanged', 'true');
+                          window.location.href = '/admin-dashboard';
+                        } else {
+                          localStorage.setItem(`vendorPasswordChanged_${credentials.username}`, 'true');
+                          window.location.href = '/vendor-dashboard';
+                        }
+                      }}
+                    >
+                      Skip for Now
+                    </Button>
+                    <Button 
+                      className={`flex-1 h-12 text-white font-medium ${
+                        isAdmin ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'
+                      }`}
+                      onClick={() => setCurrentFlow('password-reset')}
+                    >
+                      Change Password
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {currentFlow === 'forgot-password' && (
+                <form onSubmit={handleForgotPassword} className="space-y-6">
+                  <div>
+                    <Label htmlFor="email" className="text-gray-700 font-medium">Email Address</Label>
+                    <div className="relative mt-2">
+                      <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-10 h-12 border-2 focus:border-blue-500 transition-colors"
+                        placeholder="Enter your email"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      className="flex-1 h-12"
+                      onClick={() => setCurrentFlow('login')}
+                    >
+                      Back to Login
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'Sending...' : 'Send Code'}
+                    </Button>
+                  </div>
+                </form>
+              )}
+
+              {currentFlow === 'verify-email' && (
+                <form onSubmit={handleVerifyCode} className="space-y-6">
+                  <div>
+                    <Label htmlFor="code" className="text-gray-700 font-medium">Verification Code</Label>
+                    <div className="relative mt-2">
+                      <Input
+                        id="code"
+                        type="text"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value)}
+                        className="h-12 border-2 focus:border-blue-500 transition-colors text-center text-lg tracking-widest"
+                        placeholder="123456"
+                        maxLength={6}
+                        required
+                      />
+                    </div>
+                    <p className="text-sm text-gray-500 mt-2">Enter verification code: 123456 (demo)</p>
+                    {validationErrors.email && (
+                      <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>
+                    )}
+                  </div>
+                  <div className="flex gap-3">
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      className="flex-1 h-12"
+                      onClick={() => setCurrentFlow('forgot-password')}
+                    >
+                      Back
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      Verify Code
+                    </Button>
+                  </div>
+                </form>
+              )}
+
+              {currentFlow === 'password-reset' && (
                 <form onSubmit={handlePasswordReset} className="space-y-6">
                   <div>
                     <Label htmlFor="newPassword" className="text-gray-700 font-medium">New Password</Label>
@@ -281,12 +427,16 @@ const Login = () => {
                       variant="outline"
                       className="flex-1 h-12"
                       onClick={() => {
-                        setIsFirstTimeLogin(false);
+                        if (currentFlow === 'password-reset' && localStorage.getItem('adminPasswordChanged') !== 'true' && localStorage.getItem(`vendorPasswordChanged_${credentials.username}`) !== 'true') {
+                          setCurrentFlow('first-time-check');
+                        } else {
+                          setCurrentFlow('login');
+                        }
                         setNewPassword('');
                         setConfirmPassword('');
                       }}
                     >
-                      Back to Login
+                      Back
                     </Button>
                     <Button 
                       type="submit" 
@@ -295,19 +445,13 @@ const Login = () => {
                       }`}
                       disabled={isLoading}
                     >
-                      {isLoading ? (
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                          className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                        />
-                      ) : (
-                        'Update Password'
-                      )}
+                      {isLoading ? 'Updating...' : 'Update Password'}
                     </Button>
                   </div>
                 </form>
-              ) : (
+              )}
+
+              {currentFlow === 'login' && (
                 <form onSubmit={handleLogin} className="space-y-6">
                   <div>
                     <Label htmlFor="username" className="text-gray-700 font-medium">Username</Label>
@@ -394,6 +538,17 @@ const Login = () => {
                       </motion.p>
                     )}
                   </div>
+                  
+                  <div className="text-right">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentFlow('forgot-password')}
+                      className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
+                  
                   <Button 
                     type="submit" 
                     className={`w-full h-12 text-white font-medium text-lg transition-all duration-300 transform hover:scale-105 ${
