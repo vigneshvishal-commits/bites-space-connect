@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Lock, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
@@ -14,6 +13,7 @@ const Login = () => {
     username: '',
     password: ''
   });
+  const [isFirstTimeAdmin, setIsFirstTimeAdmin] = useState(false);
   const [isFirstTimeVendor, setIsFirstTimeVendor] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -58,10 +58,8 @@ const Login = () => {
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     if (isAdmin && credentials.username === 'EatInCognizant' && credentials.password === 'qwerty12345') {
-      setLoginSuccess(true);
-      setTimeout(() => {
-        window.location.href = '/admin-dashboard';
-      }, 1500);
+      // Check if admin needs to change password (first time login)
+      setIsFirstTimeAdmin(true);
     } else if (!isAdmin && credentials.username && credentials.password) {
       setIsFirstTimeVendor(true);
     } else {
@@ -81,7 +79,11 @@ const Login = () => {
       await new Promise(resolve => setTimeout(resolve, 1500));
       setLoginSuccess(true);
       setTimeout(() => {
-        window.location.href = '/vendor-dashboard';
+        if (isFirstTimeAdmin) {
+          window.location.href = '/admin-dashboard';
+        } else {
+          window.location.href = '/vendor-dashboard';
+        }
       }, 1500);
     }
   };
@@ -108,7 +110,7 @@ const Login = () => {
             transition={{ delay: 0.4 }}
             className="text-2xl font-bold text-green-600"
           >
-            Login Successful!
+            Password Updated Successfully!
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -182,14 +184,14 @@ const Login = () => {
           <Card className="shadow-xl border-0">
             <CardHeader className="text-center pb-4">
               <CardTitle className="text-2xl font-bold text-gray-800">
-                {isFirstTimeVendor ? 'Reset Your Password' : `${isAdmin ? 'Admin' : 'Vendor'} Login`}
+                {(isFirstTimeVendor || isFirstTimeAdmin) ? 'Reset Your Password' : `${isAdmin ? 'Admin' : 'Vendor'} Login`}
               </CardTitle>
               <p className="text-gray-600 text-sm">
-                {isFirstTimeVendor ? 'Create a new secure password' : 'Enter your credentials to continue'}
+                {(isFirstTimeVendor || isFirstTimeAdmin) ? 'Create a new secure password' : 'Enter your credentials to continue'}
               </p>
             </CardHeader>
             <CardContent>
-              {isFirstTimeVendor ? (
+              {(isFirstTimeVendor || isFirstTimeAdmin) ? (
                 <form onSubmit={handlePasswordReset} className="space-y-6">
                   <div>
                     <Label htmlFor="newPassword" className="text-gray-700 font-medium">New Password</Label>
@@ -230,7 +232,9 @@ const Login = () => {
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-medium text-lg transition-all duration-300 transform hover:scale-105"
+                    className={`w-full h-12 text-white font-medium text-lg transition-all duration-300 transform hover:scale-105 ${
+                      isFirstTimeAdmin ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'
+                    }`}
                     disabled={isLoading}
                   >
                     {isLoading ? (
