@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, Flag, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
@@ -20,7 +19,6 @@ const TicketManagement = () => {
       subject: "Food quality issue",
       description: "The food was cold when delivered and the taste was not up to the mark. I ordered chicken biryani but received a cold portion.",
       customerName: "John Doe",
-      customerEmployeeId: "EMP12345",
       customerContact: "+91 9876543210",
       vendorName: "Spice Paradise",
       priority: "high",
@@ -33,7 +31,6 @@ const TicketManagement = () => {
       subject: "Late delivery",
       description: "Order was delivered 45 minutes late. I had to wait and it affected my lunch break schedule.",
       customerName: "Sarah Smith",
-      customerEmployeeId: "EMP12346",
       customerContact: "+91 9876543211",
       vendorName: "Fast Corner",
       priority: "medium",
@@ -46,7 +43,6 @@ const TicketManagement = () => {
       subject: "Wrong order received",
       description: "I ordered a vegetarian burger but received a chicken burger instead. This is against my dietary preferences.",
       customerName: "Mike Johnson",
-      customerEmployeeId: "EMP12347",
       customerContact: "+91 9876543212",
       vendorName: "Healthy Bites",
       priority: "low",
@@ -59,7 +55,6 @@ const TicketManagement = () => {
       subject: "Unhygienic food packaging",
       description: "The food container was dirty and there were spots on the packaging. Food safety is a concern.",
       customerName: "Emily Davis",
-      customerEmployeeId: "EMP12348",
       customerContact: "+91 9876543213",
       vendorName: "Cafe Delight",
       priority: "high",
@@ -72,7 +67,6 @@ const TicketManagement = () => {
       subject: "Overcharged amount",
       description: "I was charged ₹250 for an item that costs ₹180 according to the menu. Please check the billing.",
       customerName: "Robert Wilson",
-      customerEmployeeId: "EMP12349",
       customerContact: "+91 9876543214",
       vendorName: "Snack Hub",
       priority: "medium",
@@ -280,7 +274,7 @@ const TicketManagement = () => {
                     <td className="p-4">
                       <div>
                         <p className="font-medium">{ticket.customerName}</p>
-                        <p className="text-sm text-gray-600">{ticket.customerEmployeeId}</p>
+                        <p className="text-sm text-gray-600">{ticket.customerContact}</p>
                       </div>
                     </td>
                     <td className="p-4">{ticket.vendorName}</td>
@@ -358,7 +352,6 @@ const TicketManagement = () => {
                     <h3 className="font-semibold text-gray-800 mb-2">Customer Information</h3>
                     <div className="space-y-2 text-sm">
                       <p><strong>Name:</strong> {selectedTicket.customerName}</p>
-                      <p><strong>Employee ID:</strong> {selectedTicket.customerEmployeeId}</p>
                       <p><strong>Contact:</strong> {selectedTicket.customerContact}</p>
                     </div>
                   </div>
