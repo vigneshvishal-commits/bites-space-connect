@@ -124,20 +124,20 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.3 }}
         >
           <div className="relative">
-            {/* Modern splashy polygon-shaped container for biryani/chicken masala platter */}
+            {/* Modern splashy polygon-shaped container for multi-cuisine platter with biryani, chicken masala, egg dishes */}
             <motion.div
               className="relative"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
             >
               <div className="relative overflow-hidden" style={{
-                clipPath: 'polygon(8% 2%, 18% 0%, 28% 3%, 38% 1%, 48% 4%, 58% 0%, 68% 2%, 78% 5%, 88% 1%, 95% 7%, 98% 17%, 100% 27%, 96% 37%, 99% 47%, 97% 57%, 94% 67%, 91% 77%, 87% 87%, 81% 94%, 71% 98%, 61% 100%, 51% 97%, 41% 99%, 31% 96%, 21% 93%, 11% 89%, 5% 82%, 2% 72%, 0% 62%, 3% 52%, 1% 42%, 4% 32%, 2% 22%, 5% 12%)',
-                height: '500px',
+                clipPath: 'polygon(5% 0%, 12% 2%, 20% 0%, 28% 3%, 35% 1%, 43% 4%, 50% 0%, 58% 2%, 65% 5%, 73% 1%, 80% 3%, 88% 0%, 95% 4%, 98% 12%, 100% 20%, 97% 28%, 99% 36%, 96% 44%, 98% 52%, 94% 60%, 97% 68%, 93% 76%, 89% 84%, 84% 91%, 78% 96%, 70% 99%, 62% 97%, 54% 100%, 46% 96%, 38% 98%, 30% 95%, 22% 97%, 14% 93%, 7% 88%, 3% 81%, 0% 73%, 2% 65%, 5% 57%, 1% 49%, 4% 41%, 2% 33%, 6% 25%, 3% 17%, 8% 9%)',
+                height: '520px',
                 width: '100%'
               }}>
                 <img
-                  src="https://images.unsplash.com/photo-1563379091339-03246963d96c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Delicious biryani and chicken masala platter with aromatic spices"
+                  src="https://images.unsplash.com/photo-1606491956689-2ea866880c84?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Multi-cuisine platter with biryani, chicken masala, egg dishes and various Indian delicacies"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-br from-orange-600/20 to-red-600/20" />

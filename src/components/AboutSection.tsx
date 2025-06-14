@@ -78,11 +78,11 @@ const AboutSection = () => {
             <div className="relative">
               {/* Modern splashy polygon shape for employees cafeteria dining image */}
               <div className="relative overflow-hidden" style={{
-                clipPath: 'polygon(6% 1%, 16% 3%, 26% 0%, 36% 4%, 46% 1%, 56% 5%, 66% 2%, 76% 6%, 86% 3%, 94% 9%, 97% 19%, 99% 29%, 96% 39%, 98% 49%, 95% 59%, 92% 69%, 88% 79%, 83% 88%, 76% 95%, 66% 99%, 56% 97%, 46% 100%, 36% 96%, 26% 98%, 16% 94%, 8% 89%, 4% 81%, 1% 71%, 3% 61%, 0% 51%, 2% 41%, 5% 31%, 3% 21%, 7% 11%)',
-                height: '500px'
+                clipPath: 'polygon(3% 1%, 10% 0%, 17% 2%, 24% 0%, 31% 3%, 38% 1%, 45% 4%, 52% 0%, 59% 2%, 66% 5%, 73% 1%, 80% 3%, 87% 0%, 94% 4%, 97% 11%, 99% 18%, 100% 25%, 98% 32%, 96% 39%, 99% 46%, 97% 53%, 94% 60%, 96% 67%, 93% 74%, 90% 81%, 86% 88%, 81% 94%, 75% 98%, 68% 100%, 61% 97%, 54% 99%, 47% 96%, 40% 98%, 33% 95%, 26% 97%, 19% 94%, 12% 90%, 6% 85%, 2% 78%, 0% 71%, 3% 64%, 1% 57%, 4% 50%, 2% 43%, 5% 36%, 3% 29%, 6% 22%, 4% 15%, 7% 8%)',
+                height: '520px'
               }}>
                 <img
-                  src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                   alt="Employees enjoying meals together in modern cafeteria dining area"
                   className="w-full h-full object-cover"
                 />
