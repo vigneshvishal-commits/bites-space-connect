@@ -13,13 +13,14 @@ const HeroSection = () => {
   // Floating ball animation variants
   const ballVariants = {
     animate: (i: number) => ({
-      y: [0, -20, 0],
-      x: [0, 10, -10, 0],
-      scale: [1, 1.1, 0.9, 1],
+      y: [0, -30, 10, -20, 0],
+      x: [0, 15, -10, 5, 0],
+      scale: [1, 1.2, 0.8, 1.1, 1],
+      rotate: [0, 45, -30, 60, 0],
       transition: {
-        duration: 4 + i * 0.5,
+        duration: 6 + i * 0.7,
         repeat: Infinity,
-        delay: i * 0.8,
+        delay: i * 0.5,
         ease: "easeInOut"
       }
     })
@@ -27,37 +28,59 @@ const HeroSection = () => {
 
   return (
     <section className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center pt-20 relative overflow-hidden" ref={ref}>
-      {/* Animated Background Balls */}
+      {/* Enhanced Animated Background Balls - More scattered throughout */}
       <div className="absolute inset-0 pointer-events-none">
-        {[...Array(8)].map((_, i) => (
+        {/* Top area balls */}
+        {[...Array(12)].map((_, i) => (
           <motion.div
-            key={i}
-            className={`absolute w-4 h-4 rounded-full ${
-              i % 3 === 0 ? 'bg-blue-300/30' : 
-              i % 3 === 1 ? 'bg-green-300/30' : 'bg-orange-300/30'
+            key={`top-${i}`}
+            className={`absolute rounded-full ${
+              i % 4 === 0 ? 'w-3 h-3 bg-blue-400/20' : 
+              i % 4 === 1 ? 'w-5 h-5 bg-green-400/25' :
+              i % 4 === 2 ? 'w-4 h-4 bg-orange-300/30' : 'w-2 h-2 bg-purple-400/20'
             }`}
             style={{
-              left: `${10 + i * 12}%`,
-              top: `${15 + (i % 3) * 25}%`,
+              left: `${5 + i * 8}%`,
+              top: `${5 + (i % 4) * 15}%`,
             }}
             variants={ballVariants}
             animate="animate"
             custom={i}
           />
         ))}
-        {[...Array(6)].map((_, i) => (
+        
+        {/* Middle area balls */}
+        {[...Array(10)].map((_, i) => (
           <motion.div
-            key={`ball-${i}`}
-            className={`absolute w-3 h-3 rounded-full ${
-              i % 2 === 0 ? 'bg-purple-300/25' : 'bg-pink-300/25'
+            key={`middle-${i}`}
+            className={`absolute rounded-full ${
+              i % 3 === 0 ? 'w-6 h-6 bg-pink-300/20' : 
+              i % 3 === 1 ? 'w-3 h-3 bg-indigo-300/25' : 'w-4 h-4 bg-yellow-300/30'
             }`}
             style={{
-              right: `${5 + i * 15}%`,
-              top: `${20 + (i % 2) * 30}%`,
+              right: `${8 + i * 9}%`,
+              top: `${40 + (i % 3) * 20}%`,
             }}
             variants={ballVariants}
             animate="animate"
-            custom={i + 8}
+            custom={i + 12}
+          />
+        ))}
+        
+        {/* Bottom area balls */}
+        {[...Array(8)].map((_, i) => (
+          <motion.div
+            key={`bottom-${i}`}
+            className={`absolute rounded-full ${
+              i % 2 === 0 ? 'w-5 h-5 bg-teal-300/25' : 'w-3 h-3 bg-rose-300/20'
+            }`}
+            style={{
+              left: `${10 + i * 12}%`,
+              bottom: `${5 + (i % 2) * 15}%`,
+            }}
+            variants={ballVariants}
+            animate="animate"
+            custom={i + 22}
           />
         ))}
       </div>
@@ -125,14 +148,43 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.3 }}
         >
           <div className="relative">
-            <motion.img
-              src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-              alt="Employees dining together in cafeteria"
-              className="rounded-3xl shadow-2xl w-full object-cover h-[600px]"
+            {/* Modern blob-shaped container for the first image */}
+            <motion.div
+              className="relative mb-8"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/20 to-green-600/20 rounded-3xl" />
+            >
+              <div className="relative overflow-hidden" style={{
+                clipPath: 'polygon(20% 0%, 100% 20%, 80% 100%, 0% 80%)',
+                height: '280px'
+              }}>
+                <img
+                  src="https://images.unsplash.com/photo-1490818387583-1baba5e638af?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Vibrant multi-cuisine food platter"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-green-600/20" />
+              </div>
+            </motion.div>
+
+            {/* Modern blob-shaped container for the second image */}
+            <motion.div
+              className="relative"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="relative overflow-hidden" style={{
+                clipPath: 'polygon(0% 20%, 80% 0%, 100% 80%, 20% 100%)',
+                height: '320px'
+              }}>
+                <img
+                  src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Employees dining together in cafeteria"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-tr from-green-600/20 to-blue-600/20" />
+              </div>
+            </motion.div>
             
             <motion.div
               className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-6 shadow-xl border border-blue-200"

@@ -13,8 +13,7 @@ const Login = () => {
     username: '',
     password: ''
   });
-  const [isFirstTimeAdmin, setIsFirstTimeAdmin] = useState(false);
-  const [isFirstTimeVendor, setIsFirstTimeVendor] = useState(false);
+  const [isFirstTimeLogin, setIsFirstTimeLogin] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -23,6 +22,7 @@ const Login = () => {
     password: ''
   });
   const [loginSuccess, setLoginSuccess] = useState(false);
+  const [successType, setSuccessType] = useState<'login' | 'password-change'>('login');
 
   // Check if admin password has been changed before
   const hasAdminChangedPassword = localStorage.getItem('adminPasswordChanged') === 'true';
@@ -38,9 +38,6 @@ const Login = () => {
 
     if (!credentials.password.trim()) {
       errors.password = 'Password is required';
-      isValid = false;
-    } else if (isAdmin && credentials.username === 'EatInCognizant' && credentials.password !== 'qwerty12345') {
-      errors.password = 'Invalid credentials';
       isValid = false;
     }
 
@@ -63,16 +60,22 @@ const Login = () => {
     if (isAdmin && credentials.username === 'EatInCognizant' && credentials.password === 'qwerty12345') {
       // Check if admin needs to change password (first time login only)
       if (!hasAdminChangedPassword) {
-        setIsFirstTimeAdmin(true);
+        setIsFirstTimeLogin(true);
+        setIsLoading(false);
+        return;
       } else {
         // Admin has already changed password, proceed to dashboard
+        setSuccessType('login');
         setLoginSuccess(true);
         setTimeout(() => {
           window.location.href = '/admin-dashboard';
         }, 1500);
       }
     } else if (!isAdmin && credentials.username && credentials.password) {
-      setIsFirstTimeVendor(true);
+      // For vendor, assume it's first time login requiring password reset
+      setIsFirstTimeLogin(true);
+      setIsLoading(false);
+      return;
     } else {
       setValidationErrors({
         username: 'Invalid credentials',
@@ -90,13 +93,14 @@ const Login = () => {
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Mark admin password as changed if this is admin first time login
-      if (isFirstTimeAdmin) {
+      if (isAdmin) {
         localStorage.setItem('adminPasswordChanged', 'true');
       }
       
+      setSuccessType('password-change');
       setLoginSuccess(true);
       setTimeout(() => {
-        if (isFirstTimeAdmin) {
+        if (isAdmin) {
           window.location.href = '/admin-dashboard';
         } else {
           window.location.href = '/vendor-dashboard';
@@ -105,7 +109,22 @@ const Login = () => {
     }
   };
 
+  const getSuccessMessage = () => {
+    if (successType === 'password-change') {
+      return {
+        title: 'Password Updated Successfully!',
+        subtitle: 'Your password has been changed. Redirecting to dashboard...'
+      };
+    } else {
+      return {
+        title: 'Login Successful!',
+        subtitle: 'Welcome back! Redirecting to dashboard...'
+      };
+    }
+  };
+
   if (loginSuccess) {
+    const message = getSuccessMessage();
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
         <motion.div
@@ -127,7 +146,7 @@ const Login = () => {
             transition={{ delay: 0.4 }}
             className="text-2xl font-bold text-green-600"
           >
-            Password Updated Successfully!
+            {message.title}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -135,7 +154,7 @@ const Login = () => {
             transition={{ delay: 0.6 }}
             className="text-gray-600"
           >
-            Redirecting to dashboard...
+            {message.subtitle}
           </motion.p>
         </motion.div>
       </div>
@@ -162,38 +181,40 @@ const Login = () => {
           </h1>
         </motion.div>
 
-        {/* Toggle Buttons */}
-        <motion.div
-          className="flex bg-white rounded-lg p-1 mb-6 shadow-lg"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <button
-            onClick={() => setIsAdmin(true)}
-            className={`flex-1 py-3 px-4 rounded-md transition-all duration-300 font-medium ${
-              isAdmin 
-                ? 'bg-blue-600 text-white shadow-md transform scale-105' 
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
+        {/* Toggle Buttons - Only show when not in first time login flow */}
+        {!isFirstTimeLogin && (
+          <motion.div
+            className="flex bg-white rounded-lg p-1 mb-6 shadow-lg"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Admin
-          </button>
-          <button
-            onClick={() => setIsAdmin(false)}
-            className={`flex-1 py-3 px-4 rounded-md transition-all duration-300 font-medium ${
-              !isAdmin 
-                ? 'bg-green-600 text-white shadow-md transform scale-105' 
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            Vendor
-          </button>
-        </motion.div>
+            <button
+              onClick={() => setIsAdmin(true)}
+              className={`flex-1 py-3 px-4 rounded-md transition-all duration-300 font-medium ${
+                isAdmin 
+                  ? 'bg-blue-600 text-white shadow-md transform scale-105' 
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              Admin
+            </button>
+            <button
+              onClick={() => setIsAdmin(false)}
+              className={`flex-1 py-3 px-4 rounded-md transition-all duration-300 font-medium ${
+                !isAdmin 
+                  ? 'bg-green-600 text-white shadow-md transform scale-105' 
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              Vendor
+            </button>
+          </motion.div>
+        )}
 
         {/* Login Card */}
         <motion.div
-          key={isAdmin ? 'admin' : 'vendor'}
+          key={isFirstTimeLogin ? 'reset' : (isAdmin ? 'admin' : 'vendor')}
           initial={{ opacity: 0, rotateY: 90 }}
           animate={{ opacity: 1, rotateY: 0 }}
           transition={{ duration: 0.6 }}
@@ -201,14 +222,21 @@ const Login = () => {
           <Card className="shadow-xl border-0">
             <CardHeader className="text-center pb-4">
               <CardTitle className="text-2xl font-bold text-gray-800">
-                {(isFirstTimeVendor || isFirstTimeAdmin) ? 'Reset Your Password' : `${isAdmin ? 'Admin' : 'Vendor'} Login`}
+                {isFirstTimeLogin ? (
+                  <>
+                    <span className="block text-sm text-gray-500 mb-1">First Time Login</span>
+                    Reset Your Password
+                  </>
+                ) : (
+                  `${isAdmin ? 'Admin' : 'Vendor'} Login`
+                )}
               </CardTitle>
               <p className="text-gray-600 text-sm">
-                {(isFirstTimeVendor || isFirstTimeAdmin) ? 'Create a new secure password' : 'Enter your credentials to continue'}
+                {isFirstTimeLogin ? 'Create a new secure password for your account' : 'Enter your credentials to continue'}
               </p>
             </CardHeader>
             <CardContent>
-              {(isFirstTimeVendor || isFirstTimeAdmin) ? (
+              {isFirstTimeLogin ? (
                 <form onSubmit={handlePasswordReset} className="space-y-6">
                   <div>
                     <Label htmlFor="newPassword" className="text-gray-700 font-medium">New Password</Label>
@@ -247,23 +275,37 @@ const Login = () => {
                       />
                     </div>
                   </div>
-                  <Button 
-                    type="submit" 
-                    className={`w-full h-12 text-white font-medium text-lg transition-all duration-300 transform hover:scale-105 ${
-                      isFirstTimeAdmin ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'
-                    }`}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                      />
-                    ) : (
-                      'Update Password'
-                    )}
-                  </Button>
+                  <div className="flex gap-3">
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      className="flex-1 h-12"
+                      onClick={() => {
+                        setIsFirstTimeLogin(false);
+                        setNewPassword('');
+                        setConfirmPassword('');
+                      }}
+                    >
+                      Back to Login
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      className={`flex-1 h-12 text-white font-medium text-lg transition-all duration-300 transform hover:scale-105 ${
+                        isAdmin ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'
+                      }`}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                        />
+                      ) : (
+                        'Update Password'
+                      )}
+                    </Button>
+                  </div>
                 </form>
               ) : (
                 <form onSubmit={handleLogin} className="space-y-6">
