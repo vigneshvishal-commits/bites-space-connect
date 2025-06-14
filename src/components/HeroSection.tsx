@@ -124,23 +124,23 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.3 }}
         >
           <div className="relative">
-            {/* Complex polygon-shaped container for multi-cuisine platter */}
+            {/* Modern splashy polygon-shaped container for biryani/chicken masala platter */}
             <motion.div
               className="relative"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
             >
               <div className="relative overflow-hidden" style={{
-                clipPath: 'polygon(15% 5%, 25% 0%, 35% 2%, 45% 0%, 55% 3%, 65% 0%, 75% 4%, 85% 1%, 95% 8%, 98% 18%, 100% 28%, 97% 38%, 100% 48%, 96% 58%, 98% 68%, 94% 78%, 90% 88%, 80% 96%, 70% 99%, 60% 97%, 50% 100%, 40% 98%, 30% 95%, 20% 92%, 10% 88%, 5% 78%, 2% 68%, 0% 58%, 3% 48%, 0% 38%, 4% 28%, 2% 18%, 8% 8%)',
+                clipPath: 'polygon(8% 2%, 18% 0%, 28% 3%, 38% 1%, 48% 4%, 58% 0%, 68% 2%, 78% 5%, 88% 1%, 95% 7%, 98% 17%, 100% 27%, 96% 37%, 99% 47%, 97% 57%, 94% 67%, 91% 77%, 87% 87%, 81% 94%, 71% 98%, 61% 100%, 51% 97%, 41% 99%, 31% 96%, 21% 93%, 11% 89%, 5% 82%, 2% 72%, 0% 62%, 3% 52%, 1% 42%, 4% 32%, 2% 22%, 5% 12%)',
                 height: '500px',
                 width: '100%'
               }}>
                 <img
-                  src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Multi-cuisine food platter with various dishes"
+                  src="https://images.unsplash.com/photo-1563379091339-03246963d96c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Delicious biryani and chicken masala platter with aromatic spices"
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-green-600/20" />
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-600/20 to-red-600/20" />
               </div>
             </motion.div>
             

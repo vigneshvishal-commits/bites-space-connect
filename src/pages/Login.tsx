@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Lock, Eye, EyeOff, CheckCircle, AlertCircle, Mail } from 'lucide-react';
@@ -30,7 +29,7 @@ const Login = () => {
 
   // Check if user has already changed their default password
   const getPasswordChangeKey = (username: string, isAdminUser: boolean) => {
-    return isAdminUser ? 'adminPasswordChanged' : `vendorPasswordChanged_${username}`;
+    return isAdminUser ? `adminPasswordChanged_${username}` : `vendorPasswordChanged_${username}`;
   };
 
   const hasPasswordBeenChanged = (username: string, isAdminUser: boolean) => {
@@ -68,9 +67,8 @@ const Login = () => {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    const isValidCredentials = isAdmin 
-      ? (credentials.username === 'EatInCognizant' && credentials.password === 'qwerty12345')
-      : (credentials.username && credentials.password); // For demo, any non-empty vendor credentials work
+    // Accept any non-empty credentials for both admin and vendor
+    const isValidCredentials = credentials.username.trim() && credentials.password.trim();
 
     if (isValidCredentials) {
       const hasChanged = hasPasswordBeenChanged(credentials.username, isAdmin);

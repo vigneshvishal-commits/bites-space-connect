@@ -76,14 +76,14 @@ const AboutSection = () => {
             className="order-2 lg:order-1"
           >
             <div className="relative">
-              {/* Complex polygon shape for cafeteria dining image */}
+              {/* Modern splashy polygon shape for employees cafeteria dining image */}
               <div className="relative overflow-hidden" style={{
-                clipPath: 'polygon(12% 3%, 22% 1%, 32% 4%, 42% 0%, 52% 2%, 62% 0%, 72% 3%, 82% 1%, 92% 5%, 96% 15%, 99% 25%, 97% 35%, 100% 45%, 98% 55%, 96% 65%, 93% 75%, 88% 85%, 82% 92%, 72% 97%, 62% 100%, 52% 98%, 42% 100%, 32% 96%, 22% 99%, 12% 95%, 7% 85%, 4% 75%, 1% 65%, 2% 55%, 0% 45%, 3% 35%, 1% 25%, 4% 15%, 8% 5%)',
+                clipPath: 'polygon(6% 1%, 16% 3%, 26% 0%, 36% 4%, 46% 1%, 56% 5%, 66% 2%, 76% 6%, 86% 3%, 94% 9%, 97% 19%, 99% 29%, 96% 39%, 98% 49%, 95% 59%, 92% 69%, 88% 79%, 83% 88%, 76% 95%, 66% 99%, 56% 97%, 46% 100%, 36% 96%, 26% 98%, 16% 94%, 8% 89%, 4% 81%, 1% 71%, 3% 61%, 0% 51%, 2% 41%, 5% 31%, 3% 21%, 7% 11%)',
                 height: '500px'
               }}>
                 <img
-                  src="https://images.unsplash.com/photo-1721322800607-8c38375eef04?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Employees dining together at cafeteria tables"
+                  src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Employees enjoying meals together in modern cafeteria dining area"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-green-600/10" />
