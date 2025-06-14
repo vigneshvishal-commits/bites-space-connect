@@ -124,19 +124,19 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.3 }}
         >
           <div className="relative">
-            {/* Modern polygon-shaped container for multi-cuisine platter */}
+            {/* Complex polygon-shaped container for multi-cuisine platter */}
             <motion.div
               className="relative"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
             >
               <div className="relative overflow-hidden" style={{
-                clipPath: 'polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%)',
+                clipPath: 'polygon(15% 5%, 25% 0%, 35% 2%, 45% 0%, 55% 3%, 65% 0%, 75% 4%, 85% 1%, 95% 8%, 98% 18%, 100% 28%, 97% 38%, 100% 48%, 96% 58%, 98% 68%, 94% 78%, 90% 88%, 80% 96%, 70% 99%, 60% 97%, 50% 100%, 40% 98%, 30% 95%, 20% 92%, 10% 88%, 5% 78%, 2% 68%, 0% 58%, 3% 48%, 0% 38%, 4% 28%, 2% 18%, 8% 8%)',
                 height: '500px',
                 width: '100%'
               }}>
                 <img
-                  src="https://images.unsplash.com/photo-1490818387583-1baba5e638af?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                   alt="Multi-cuisine food platter with various dishes"
                   className="w-full h-full object-cover"
                 />

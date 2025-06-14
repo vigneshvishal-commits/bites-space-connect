@@ -76,13 +76,13 @@ const AboutSection = () => {
             className="order-2 lg:order-1"
           >
             <div className="relative">
-              {/* Modern polygon shape for cafeteria dining image */}
+              {/* Complex polygon shape for cafeteria dining image */}
               <div className="relative overflow-hidden" style={{
-                clipPath: 'polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%)',
+                clipPath: 'polygon(12% 3%, 22% 1%, 32% 4%, 42% 0%, 52% 2%, 62% 0%, 72% 3%, 82% 1%, 92% 5%, 96% 15%, 99% 25%, 97% 35%, 100% 45%, 98% 55%, 96% 65%, 93% 75%, 88% 85%, 82% 92%, 72% 97%, 62% 100%, 52% 98%, 42% 100%, 32% 96%, 22% 99%, 12% 95%, 7% 85%, 4% 75%, 1% 65%, 2% 55%, 0% 45%, 3% 35%, 1% 25%, 4% 15%, 8% 5%)',
                 height: '500px'
               }}>
                 <img
-                  src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  src="https://images.unsplash.com/photo-1721322800607-8c38375eef04?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                   alt="Employees dining together at cafeteria tables"
                   className="w-full h-full object-cover"
                 />
