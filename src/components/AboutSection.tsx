@@ -82,8 +82,8 @@ const AboutSection = () => {
                 height: '520px'
               }}>
                 <img
-                  src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Group of employees standing around and dining in modern office cafeteria"
+                  src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="People sitting at tables with laptops and meals in modern office cafeteria"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-green-600/10" />
