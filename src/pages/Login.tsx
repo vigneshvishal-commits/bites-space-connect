@@ -26,11 +26,17 @@ const Login = () => {
     email: ''
   });
   const [loginSuccess, setLoginSuccess] = useState(false);
-  const [successType, setSuccessType] = useState<'login' | 'password-change'>('login');
+  const [successType, setSuccessType] = useState<'login' | 'password-change' | 'password-reset'>('login');
 
-  // Check if admin password has been changed before
-  const hasAdminChangedPassword = localStorage.getItem('adminPasswordChanged') === 'true';
-  const hasVendorChangedPassword = localStorage.getItem(`vendorPasswordChanged_${credentials.username}`) === 'true';
+  // Check if user has already changed their default password
+  const getPasswordChangeKey = (username: string, isAdminUser: boolean) => {
+    return isAdminUser ? 'adminPasswordChanged' : `vendorPasswordChanged_${username}`;
+  };
+
+  const hasPasswordBeenChanged = (username: string, isAdminUser: boolean) => {
+    const key = getPasswordChangeKey(username, isAdminUser);
+    return localStorage.getItem(key) === 'true';
+  };
 
   const validateCredentials = () => {
     const errors = { username: '', password: '', email: '' };
@@ -62,32 +68,28 @@ const Login = () => {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    if (isAdmin && credentials.username === 'EatInCognizant' && credentials.password === 'qwerty12345') {
-      // Check if admin needs to change password (first time login only)
-      if (!hasAdminChangedPassword) {
+    const isValidCredentials = isAdmin 
+      ? (credentials.username === 'EatInCognizant' && credentials.password === 'qwerty12345')
+      : (credentials.username && credentials.password); // For demo, any non-empty vendor credentials work
+
+    if (isValidCredentials) {
+      const hasChanged = hasPasswordBeenChanged(credentials.username, isAdmin);
+      
+      if (!hasChanged) {
+        // First time login - ask if they want to change password
         setCurrentFlow('first-time-check');
         setIsLoading(false);
         return;
       } else {
-        // Admin has already changed password, proceed to dashboard
+        // Subsequent login - proceed directly to dashboard
         setSuccessType('login');
         setLoginSuccess(true);
         setTimeout(() => {
-          window.location.href = '/admin-dashboard';
-        }, 1500);
-      }
-    } else if (!isAdmin && credentials.username && credentials.password) {
-      // Check if vendor needs to change password
-      if (!hasVendorChangedPassword) {
-        setCurrentFlow('first-time-check');
-        setIsLoading(false);
-        return;
-      } else {
-        // Vendor has already changed password, proceed to dashboard
-        setSuccessType('login');
-        setLoginSuccess(true);
-        setTimeout(() => {
-          window.location.href = '/vendor-dashboard';
+          if (isAdmin) {
+            window.location.href = '/admin-dashboard';
+          } else {
+            window.location.href = '/vendor-dashboard';
+          }
         }, 1500);
       }
     } else {
@@ -108,11 +110,8 @@ const Login = () => {
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Mark password as changed
-      if (isAdmin) {
-        localStorage.setItem('adminPasswordChanged', 'true');
-      } else {
-        localStorage.setItem(`vendorPasswordChanged_${credentials.username}`, 'true');
-      }
+      const key = getPasswordChangeKey(credentials.username, isAdmin);
+      localStorage.setItem(key, 'true');
       
       setSuccessType('password-change');
       setLoginSuccess(true);
@@ -136,11 +135,26 @@ const Login = () => {
 
   const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (verificationCode === '123456') { // Mock verification
+    if (verificationCode === '123456') {
       setCurrentFlow('password-reset');
+      setSuccessType('password-reset');
     } else {
       setValidationErrors({...validationErrors, email: 'Invalid verification code'});
     }
+  };
+
+  const handleSkipPasswordChange = () => {
+    const key = getPasswordChangeKey(credentials.username, isAdmin);
+    localStorage.setItem(key, 'true');
+    setSuccessType('login');
+    setLoginSuccess(true);
+    setTimeout(() => {
+      if (isAdmin) {
+        window.location.href = '/admin-dashboard';
+      } else {
+        window.location.href = '/vendor-dashboard';
+      }
+    }, 1500);
   };
 
   const getSuccessMessage = () => {
@@ -148,6 +162,11 @@ const Login = () => {
       return {
         title: 'Password Updated Successfully!',
         subtitle: 'Your password has been changed. Redirecting to dashboard...'
+      };
+    } else if (successType === 'password-reset') {
+      return {
+        title: 'Password Reset Successfully!',
+        subtitle: 'Your new password has been set. Redirecting to dashboard...'
       };
     } else {
       return {
@@ -256,15 +275,15 @@ const Login = () => {
           <Card className="shadow-xl border-0">
             <CardHeader className="text-center pb-4">
               <CardTitle className="text-2xl font-bold text-gray-800">
-                {currentFlow === 'first-time-check' && 'First Time Login Detected'}
-                {currentFlow === 'password-reset' && 'Reset Your Password'}
+                {currentFlow === 'first-time-check' && 'First Time Login'}
+                {currentFlow === 'password-reset' && (successType === 'password-reset' ? 'Reset Your Password' : 'Set New Password')}
                 {currentFlow === 'forgot-password' && 'Forgot Password'}
                 {currentFlow === 'verify-email' && 'Verify Your Email'}
                 {currentFlow === 'login' && `${isAdmin ? 'Admin' : 'Vendor'} Login`}
               </CardTitle>
               <p className="text-gray-600 text-sm">
-                {currentFlow === 'first-time-check' && 'It looks like this is your first time logging in. Would you like to set a new password?'}
-                {currentFlow === 'password-reset' && 'Create a new secure password for your account'}
+                {currentFlow === 'first-time-check' && 'Welcome! This appears to be your first login. Would you like to set a secure password?'}
+                {currentFlow === 'password-reset' && (successType === 'password-reset' ? 'Enter your new password below' : 'Create a secure password for your account')}
                 {currentFlow === 'forgot-password' && 'Enter your email address to receive a verification code'}
                 {currentFlow === 'verify-email' && 'Enter the verification code sent to your email'}
                 {currentFlow === 'login' && 'Enter your credentials to continue'}
@@ -274,22 +293,18 @@ const Login = () => {
               {currentFlow === 'first-time-check' && (
                 <div className="space-y-4">
                   <div className="text-center">
-                    <p className="text-gray-700 mb-6">This appears to be your first login. For security reasons, we recommend changing your password.</p>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                      <p className="text-gray-700 mb-2">🔐 <strong>First Time Login Detected</strong></p>
+                      <p className="text-sm text-gray-600">
+                        For security, we recommend changing your default password.
+                      </p>
+                    </div>
                   </div>
                   <div className="flex gap-3">
                     <Button 
                       variant="outline"
                       className="flex-1 h-12"
-                      onClick={() => {
-                        // Skip password change and proceed to dashboard
-                        if (isAdmin) {
-                          localStorage.setItem('adminPasswordChanged', 'true');
-                          window.location.href = '/admin-dashboard';
-                        } else {
-                          localStorage.setItem(`vendorPasswordChanged_${credentials.username}`, 'true');
-                          window.location.href = '/vendor-dashboard';
-                        }
-                      }}
+                      onClick={handleSkipPasswordChange}
                     >
                       Skip for Now
                     </Button>
@@ -299,7 +314,7 @@ const Login = () => {
                       }`}
                       onClick={() => setCurrentFlow('password-reset')}
                     >
-                      Change Password
+                      Set New Password
                     </Button>
                   </div>
                 </div>
@@ -427,10 +442,10 @@ const Login = () => {
                       variant="outline"
                       className="flex-1 h-12"
                       onClick={() => {
-                        if (currentFlow === 'password-reset' && localStorage.getItem('adminPasswordChanged') !== 'true' && localStorage.getItem(`vendorPasswordChanged_${credentials.username}`) !== 'true') {
-                          setCurrentFlow('first-time-check');
+                        if (successType === 'password-reset') {
+                          setCurrentFlow('verify-email');
                         } else {
-                          setCurrentFlow('login');
+                          setCurrentFlow('first-time-check');
                         }
                         setNewPassword('');
                         setConfirmPassword('');
@@ -443,9 +458,9 @@ const Login = () => {
                       className={`flex-1 h-12 text-white font-medium text-lg transition-all duration-300 transform hover:scale-105 ${
                         isAdmin ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'
                       }`}
-                      disabled={isLoading}
+                      disabled={isLoading || newPassword !== confirmPassword || newPassword.length < 6}
                     >
-                      {isLoading ? 'Updating...' : 'Update Password'}
+                      {isLoading ? 'Updating...' : (successType === 'password-reset' ? 'Reset Password' : 'Set Password')}
                     </Button>
                   </div>
                 </form>

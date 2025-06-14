@@ -2,7 +2,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { ArrowRight } from 'lucide-react';
 
 const HeroSection = () => {
   const [ref, inView] = useInView({
@@ -116,23 +115,6 @@ const HeroSection = () => {
           >
             Redefining Cafeteria Convenience. Bites Space is not just a digital menu—it's your smart food partner. Designed for modern offices, our platform connects you to your favorite cafeteria stalls, streamlines orders, and eliminates the hassle of queues.
           </motion.p>
-          
-          <motion.div
-            className="flex flex-col sm:flex-row gap-4"
-            initial={{ opacity: 0, y: 30 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.6, duration: 0.8 }}
-          >
-            <motion.button
-              className="bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-blue-700 transition-all duration-300 flex items-center justify-center group shadow-lg hover:shadow-xl"
-              style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Explore Menu
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
-            </motion.button>
-          </motion.div>
         </motion.div>
         
         <motion.div
@@ -142,15 +124,16 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.3 }}
         >
           <div className="relative">
-            {/* Modern polygon-shaped container for the first image */}
+            {/* Modern polygon-shaped container for multi-cuisine platter */}
             <motion.div
-              className="relative mb-8"
+              className="relative"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
             >
               <div className="relative overflow-hidden" style={{
-                clipPath: 'polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%)',
-                height: '280px'
+                clipPath: 'polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%)',
+                height: '500px',
+                width: '100%'
               }}>
                 <img
                   src="https://images.unsplash.com/photo-1490818387583-1baba5e638af?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
@@ -158,25 +141,6 @@ const HeroSection = () => {
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-green-600/20" />
-              </div>
-            </motion.div>
-
-            {/* Modern polygon-shaped container for the second image */}
-            <motion.div
-              className="relative"
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="relative overflow-hidden" style={{
-                clipPath: 'polygon(0% 0%, 75% 0%, 100% 100%, 25% 100%)',
-                height: '320px'
-              }}>
-                <img
-                  src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Employees dining together at cafeteria tables"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-tr from-green-600/20 to-blue-600/20" />
               </div>
             </motion.div>
             

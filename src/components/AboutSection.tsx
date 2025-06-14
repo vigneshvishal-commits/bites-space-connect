@@ -76,14 +76,14 @@ const AboutSection = () => {
             className="order-2 lg:order-1"
           >
             <div className="relative">
-              {/* Modern polygon shape for about image */}
+              {/* Modern polygon shape for cafeteria dining image */}
               <div className="relative overflow-hidden" style={{
-                clipPath: 'polygon(0% 15%, 85% 0%, 100% 85%, 15% 100%)',
+                clipPath: 'polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%)',
                 height: '500px'
               }}>
                 <img
-                  src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Office cafeteria with colleagues enjoying food and laptops on table"
+                  src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Employees dining together at cafeteria tables"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-green-600/10" />
