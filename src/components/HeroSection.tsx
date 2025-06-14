@@ -10,9 +10,59 @@ const HeroSection = () => {
     threshold: 0.1
   });
 
+  // Floating ball animation variants
+  const ballVariants = {
+    animate: (i: number) => ({
+      y: [0, -20, 0],
+      x: [0, 10, -10, 0],
+      scale: [1, 1.1, 0.9, 1],
+      transition: {
+        duration: 4 + i * 0.5,
+        repeat: Infinity,
+        delay: i * 0.8,
+        ease: "easeInOut"
+      }
+    })
+  };
+
   return (
-    <section className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center pt-20" ref={ref}>
-      <div className="container mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
+    <section className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center pt-20 relative overflow-hidden" ref={ref}>
+      {/* Animated Background Balls */}
+      <div className="absolute inset-0 pointer-events-none">
+        {[...Array(8)].map((_, i) => (
+          <motion.div
+            key={i}
+            className={`absolute w-4 h-4 rounded-full ${
+              i % 3 === 0 ? 'bg-blue-300/30' : 
+              i % 3 === 1 ? 'bg-green-300/30' : 'bg-orange-300/30'
+            }`}
+            style={{
+              left: `${10 + i * 12}%`,
+              top: `${15 + (i % 3) * 25}%`,
+            }}
+            variants={ballVariants}
+            animate="animate"
+            custom={i}
+          />
+        ))}
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={`ball-${i}`}
+            className={`absolute w-3 h-3 rounded-full ${
+              i % 2 === 0 ? 'bg-purple-300/25' : 'bg-pink-300/25'
+            }`}
+            style={{
+              right: `${5 + i * 15}%`,
+              top: `${20 + (i % 2) * 30}%`,
+            }}
+            variants={ballVariants}
+            animate="animate"
+            custom={i + 8}
+          />
+        ))}
+      </div>
+
+      <div className="container mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center relative z-10">
         <motion.div
           className="space-y-8"
           initial={{ opacity: 0, x: -50 }}
@@ -76,8 +126,8 @@ const HeroSection = () => {
         >
           <div className="relative">
             <motion.img
-              src="https://images.unsplash.com/photo-1490818387583-1baba5e638af?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-              alt="Vibrant multi-cuisine food platter"
+              src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+              alt="Employees dining together in cafeteria"
               className="rounded-3xl shadow-2xl w-full object-cover h-[600px]"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}

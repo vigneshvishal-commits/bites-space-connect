@@ -24,6 +24,9 @@ const Login = () => {
   });
   const [loginSuccess, setLoginSuccess] = useState(false);
 
+  // Check if admin password has been changed before
+  const hasAdminChangedPassword = localStorage.getItem('adminPasswordChanged') === 'true';
+
   const validateCredentials = () => {
     const errors = { username: '', password: '' };
     let isValid = true;
@@ -58,8 +61,16 @@ const Login = () => {
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     if (isAdmin && credentials.username === 'EatInCognizant' && credentials.password === 'qwerty12345') {
-      // Check if admin needs to change password (first time login)
-      setIsFirstTimeAdmin(true);
+      // Check if admin needs to change password (first time login only)
+      if (!hasAdminChangedPassword) {
+        setIsFirstTimeAdmin(true);
+      } else {
+        // Admin has already changed password, proceed to dashboard
+        setLoginSuccess(true);
+        setTimeout(() => {
+          window.location.href = '/admin-dashboard';
+        }, 1500);
+      }
     } else if (!isAdmin && credentials.username && credentials.password) {
       setIsFirstTimeVendor(true);
     } else {
@@ -77,6 +88,12 @@ const Login = () => {
     if (newPassword === confirmPassword && newPassword.length >= 6) {
       setIsLoading(true);
       await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Mark admin password as changed if this is admin first time login
+      if (isFirstTimeAdmin) {
+        localStorage.setItem('adminPasswordChanged', 'true');
+      }
+      
       setLoginSuccess(true);
       setTimeout(() => {
         if (isFirstTimeAdmin) {
