@@ -1,177 +1,244 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/card';
-import { ToggleRight, ToggleLeft, ShoppingCart, Users, HelpCircle } from 'lucide-react';
-import { Doughnut } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartData } from 'chart.js';
-import axiosInstance from "@/api/axiosInstance";
-import { useQuery } from "@tanstack/react-query";
-ChartJS.register(ArcElement, Tooltip, Legend);
+import { Store, ShoppingCart, DollarSign } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 
 const DashboardOverview = () => {
-  // All summary/analytics are fetched from backend now
-  const { data: summary, isLoading: summaryLoading } = useQuery({
-    queryKey: ['dashboard-summary'],
-    queryFn: async () => (await axiosInstance.get('/api/admin/dashboard/summary')).data
-  });
+  const [selectedVendor, setSelectedVendor] = useState('All Vendors');
 
-  const { data: analytics, isLoading: analyticsLoading } = useQuery({
-    queryKey: ['dashboard-analytics'],
-    queryFn: async () => (await axiosInstance.get('/api/admin/dashboard/analytics')).data
-  });
+  const stats = [
+    { title: 'Total Revenue', value: '₹2,45,890', change: '+15.3%', icon: DollarSign, color: 'text-green-600', bgColor: 'bg-green-100' },
+    { title: 'Total Orders', value: '1,847', change: '+12.5%', icon: ShoppingCart, color: 'text-blue-600', bgColor: 'bg-blue-100' },
+    { title: 'Total Vendors', value: '8', change: '+2', icon: Store, color: 'text-purple-600', bgColor: 'bg-purple-100' }
+  ];
 
-  const ticketData: ChartData<'doughnut', number[], string> = {
-    labels: ['Open', 'In Progress', 'Resolved', 'Closed'],
-    datasets: [
-      {
-        label: 'Ticket Status',
-        data: [12, 19, 3, 5],
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.8)',
-          'rgba(54, 162, 235, 0.8)',
-          'rgba(255, 206, 86, 0.8)',
-          'rgba(75, 192, 192, 0.8)',
-        ],
-        borderWidth: 0,
-      },
+  // All vendors trend data
+  const allVendorsData = [
+    { month: 'Jan', revenue: 25000, orders: 180 },
+    { month: 'Feb', revenue: 28000, orders: 220 },
+    { month: 'Mar', revenue: 32000, orders: 280 },
+    { month: 'Apr', revenue: 35000, orders: 320 },
+    { month: 'May', revenue: 42000, orders: 380 },
+    { month: 'Jun', revenue: 45890, orders: 420 }
+  ];
+
+  // Individual vendor data
+  const vendorSpecificData = {
+    'Spice Paradise': [
+      { month: 'Jan', revenue: 4500, orders: 32 },
+      { month: 'Feb', revenue: 5200, orders: 38 },
+      { month: 'Mar', revenue: 6100, orders: 45 },
+      { month: 'Apr', revenue: 6800, orders: 52 },
+      { month: 'May', revenue: 7200, orders: 58 },
+      { month: 'Jun', revenue: 8100, orders: 62 }
     ],
+    'Healthy Bites': [
+      { month: 'Jan', revenue: 3200, orders: 28 },
+      { month: 'Feb', revenue: 3800, orders: 32 },
+      { month: 'Mar', revenue: 4200, orders: 38 },
+      { month: 'Apr', revenue: 4600, orders: 42 },
+      { month: 'May', revenue: 5100, orders: 46 },
+      { month: 'Jun', revenue: 5500, orders: 50 }
+    ],
+    'Fast Corner': [
+      { month: 'Jan', revenue: 3800, orders: 42 },
+      { month: 'Feb', revenue: 4200, orders: 48 },
+      { month: 'Mar', revenue: 4800, orders: 55 },
+      { month: 'Apr', revenue: 5200, orders: 62 },
+      { month: 'May', revenue: 5800, orders: 68 },
+      { month: 'Jun', revenue: 6200, orders: 72 }
+    ]
   };
 
-  const vendorData: ChartData<'doughnut', number[], string> = {
-    labels: ['Active', 'Inactive'],
-    datasets: [
-      {
-        label: 'Vendor Status',
-        data: [8, 2],
-        backgroundColor: [
-          'rgba(75, 192, 192, 0.8)',
-          'rgba(255, 99, 132, 0.8)',
-        ],
-        borderWidth: 0,
-      },
-    ],
+  const getCurrentData = () => {
+    if (selectedVendor === 'All Vendors') {
+      return allVendorsData;
+    }
+    return vendorSpecificData[selectedVendor] || allVendorsData;
   };
+
+  const vendorTypeData = [
+    { name: 'Healthy Food', value: 2, color: '#10b981' },
+    { name: 'Fast Food', value: 2, color: '#3b82f6' },
+    { name: 'Cafe & Beverages', value: 2, color: '#8b5cf6' },
+    { name: 'Multi Cuisine', value: 2, color: '#f59e0b' }
+  ];
+
+  const locationData = [
+    { name: 'SRZ SDB Floor 1 Wing A', value: 3, color: '#3b82f6' },
+    { name: 'SRZ SDB Floor 1 Wing B', value: 2, color: '#10b981' },
+    { name: 'SRZ SDB2 Floor 2 Wing A', value: 2, color: '#8b5cf6' },
+    { name: 'SRZ SDB1 Floor 2 Wing B', value: 1, color: '#f59e0b' }
+  ];
+
+  const vendors = ['All Vendors', 'Spice Paradise', 'Healthy Bites', 'Fast Corner', 'Cafe Delight', 'Snack Hub', 'Green Bowl', 'Pizza Point', 'Tea Time'];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-800">Dashboard Overview</h1>
-        <p className="text-gray-600">Summary of key metrics and recent activity</p>
+    <div className="space-y-8">
+      {/* Welcome Message */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="text-center"
+      >
+        <h1 className="text-4xl font-bold text-gray-800 mb-2">
+          Welcome Admin! 
+        </h1>
+        <p className="text-xl text-gray-600">
+          Manage your Bites Space efficiently
+        </p>
+      </motion.div>
+
+      {/* Main Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {stats.map((stat, index) => {
+          const Icon = stat.icon;
+          return (
+            <motion.div
+              key={stat.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <Card className="hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                      <p className="text-3xl font-bold text-gray-900 mt-1">{stat.value}</p>
+                      <p className="text-sm text-green-600 font-medium mt-1">{stat.change}</p>
+                    </div>
+                    <div className={`p-4 rounded-full ${stat.bgColor}`}>
+                      <Icon className={`w-8 h-8 ${stat.color}`} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Total Orders</p>
-                  <p className="text-3xl font-bold text-gray-800">5,345</p>
-                </div>
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <ShoppingCart className="w-8 h-8 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Card className="hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Total Users</p>
-                  <p className="text-3xl font-bold text-green-600">1,245</p>
-                </div>
-                <div className="p-3 bg-green-100 rounded-full">
-                  <Users className="w-8 h-8 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card className="hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Active Vendors</p>
-                  <p className="text-3xl font-bold text-yellow-600">86</p>
-                </div>
-                <div className="p-3 bg-yellow-100 rounded-full">
-                  <ToggleRight className="w-8 h-8 text-yellow-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-          <Card className="hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Open Tickets</p>
-                  <p className="text-3xl font-bold text-red-600">23</p>
-                </div>
-                <div className="p-3 bg-red-100 rounded-full">
-                  <HelpCircle className="w-8 h-8 text-red-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-          <Card className="hover:shadow-lg transition-all duration-300">
-            <CardContent>
-              <h3 className="text-xl font-semibold text-gray-700 mb-4">Ticket Status</h3>
-              <Doughnut data={ticketData} />
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
-          <Card className="hover:shadow-lg transition-all duration-300">
-            <CardContent>
-              <h3 className="text-xl font-semibold text-gray-700 mb-4">Vendor Status</h3>
-              <Doughnut data={vendorData} />
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Recent Activity */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
-        <Card className="hover:shadow-lg transition-all duration-300">
+      {/* Revenue and Orders Trend - Full Width Chart */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xl font-semibold">Revenue & Orders Trend</CardTitle>
+              <select 
+                className="p-2 border rounded-md text-sm"
+                value={selectedVendor}
+                onChange={(e) => setSelectedVendor(e.target.value)}
+              >
+                {vendors.map(vendor => (
+                  <option key={vendor} value={vendor}>{vendor}</option>
+                ))}
+              </select>
+            </div>
+          </CardHeader>
           <CardContent>
-            <h3 className="text-xl font-semibold text-gray-700 mb-4">Recent Activity</h3>
-            <ul className="space-y-3">
-              <li className="flex items-center justify-between">
-                <p className="text-gray-600">New user registered</p>
-                <span className="text-sm text-gray-500">5 minutes ago</span>
-              </li>
-              <li className="flex items-center justify-between">
-                <p className="text-gray-600">Vendor updated menu</p>
-                <span className="text-sm text-gray-500">30 minutes ago</span>
-              </li>
-              <li className="flex items-center justify-between">
-                <p className="text-gray-600">New order placed</p>
-                <span className="text-sm text-gray-500">1 hour ago</span>
-              </li>
-            </ul>
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart data={getCurrentData()}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} name="Revenue (₹)" />
+                <Line type="monotone" dataKey="orders" stroke="#10b981" strokeWidth={3} name="Orders" />
+              </LineChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Two Side-by-Side Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Vendor Distribution by Type */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Distribution by Type</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={vendorTypeData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={120}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {vendorTypeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => [value, 'Count']} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="flex flex-wrap justify-center gap-2 mt-4">
+                {vendorTypeData.map((entry, index) => (
+                  <div key={index} className="flex items-center space-x-1">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
+                    <span className="text-xs text-gray-600">{entry.name} ({entry.value})</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Distribution by Location */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Distribution by Location</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={locationData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={false}
+                    tickFormatter={() => ''}
+                  />
+                  <YAxis domain={[0, 'dataMax']} tickCount={4} />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+              <div className="flex flex-wrap justify-center gap-2 mt-4">
+                {locationData.map((entry, index) => (
+                  <div key={index} className="flex items-center space-x-1">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
+                    <span className="text-xs text-gray-600">{entry.name} ({entry.value})</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
     </div>
   );
-}
+};
 
 export default DashboardOverview;

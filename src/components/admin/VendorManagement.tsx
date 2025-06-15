@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Eye, Edit, Trash2, ToggleLeft, ToggleRight, Key, RefreshCw, Send, CheckCircle } from 'lucide-react';
@@ -9,21 +10,6 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import emailjs from '@emailjs/browser';
 import VendorSearch from './VendorSearch';
-import axiosInstance from "@/api/axiosInstance";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
-// Define Vendor type for query result
-type Vendor = {
-  id: number;
-  outletName: string;
-  vendorName: string;
-  vendorEmail: string;
-  location: string;
-  contact: string;
-  outletType: string;
-  isActive: boolean;
-  joinDate: string;
-};
 
 const VendorManagement = () => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -49,56 +35,112 @@ const VendorManagement = () => {
     outletType: 'Healthy Food'
   });
 
-  const queryClient = useQueryClient();
-
-  const { data: vendors = [], isLoading: loadingVendors } = useQuery<Vendor[]>({
-    queryKey: ['vendors', searchTerm, statusFilter, typeFilter, locationFilter],
-    queryFn: async () => {
-      const params: any = {};
-      if (searchTerm) params.search = searchTerm;
-      if (statusFilter !== 'all') params.status = statusFilter;
-      if (typeFilter !== 'all') params.type = typeFilter;
-      if (locationFilter !== 'all') params.location = locationFilter;
-
-      const { data } = await axiosInstance.get('/api/admin/vendors', { params });
-      return data;
+  // Mock vendor data
+  const [vendors, setVendors] = useState([
+    {
+      id: 1,
+      outletName: "Spice Paradise",
+      vendorName: "John Doe",
+      vendorEmail: "john.doe@cognizant.com",
+      location: "SRZ SDB Floor 1 Wing A",
+      contact: "+91 9876543210",
+      outletType: "Multi Cuisine",
+      isActive: true,
+      joinDate: "2024-01-15"
+    },
+    {
+      id: 2,
+      outletName: "Healthy Bites",
+      vendorName: "Sarah Smith",
+      vendorEmail: "sarah.smith@cognizant.com",
+      location: "SRZ SDB Floor 1 Wing B",
+      contact: "+91 9876543211",
+      outletType: "Healthy Food",
+      isActive: false,
+      joinDate: "2024-02-20"
+    },
+    {
+      id: 3,
+      outletName: "Fast Corner",
+      vendorName: "Mike Johnson",
+      vendorEmail: "mike.johnson@cognizant.com",
+      location: "SRZ SDB2 Floor 2 Wing A",
+      contact: "+91 9876543212",
+      outletType: "Fast Food",
+      isActive: true,
+      joinDate: "2024-01-10"
+    },
+    {
+      id: 4,
+      outletName: "Cafe Delight",
+      vendorName: "Emily Davis",
+      vendorEmail: "emily.davis@cognizant.com",
+      location: "SRZ SDB1 Floor 2 Wing B",
+      contact: "+91 9876543213",
+      outletType: "Cafe and Beverages",
+      isActive: true,
+      joinDate: "2024-03-05"
+    },
+    {
+      id: 5,
+      outletName: "Snack Hub",
+      vendorName: "Robert Wilson",
+      vendorEmail: "robert.wilson@cognizant.com",
+      location: "SRZ SDB Floor 1 Wing A",
+      contact: "+91 9876543214",
+      outletType: "Snack and Refreshment",
+      isActive: false,
+      joinDate: "2024-02-28"
+    },
+    {
+      id: 6,
+      outletName: "Green Bowl",
+      vendorName: "Lisa Brown",
+      vendorEmail: "lisa.brown@cognizant.com",
+      location: "SRZ SDB Floor 1 Wing B",
+      contact: "+91 9876543215",
+      outletType: "Healthy Food",
+      isActive: true,
+      joinDate: "2024-03-12"
+    },
+    {
+      id: 7,
+      outletName: "Pizza Point",
+      vendorName: "David Miller",
+      vendorEmail: "david.miller@cognizant.com",
+      location: "SRZ SDB2 Floor 2 Wing A",
+      contact: "+91 9876543216",
+      outletType: "Fast Food",
+      isActive: true,
+      joinDate: "2024-01-22"
+    },
+    {
+      id: 8,
+      outletName: "Tea Time",
+      vendorName: "Anna Taylor",
+      vendorEmail: "anna.taylor@cognizant.com",
+      location: "SRZ SDB1 Floor 2 Wing B",
+      contact: "+91 9876543217",
+      outletType: "Cafe and Beverages",
+      isActive: true,
+      joinDate: "2024-03-08"
     }
+  ]);
+
+  const filteredVendors = vendors.filter(vendor => {
+    const matchesSearch = searchTerm === '' || vendor.outletName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'active' && vendor.isActive) ||
+                         (statusFilter === 'inactive' && !vendor.isActive);
+    const matchesType = typeFilter === 'all' || vendor.outletType === typeFilter;
+    const matchesLocation = locationFilter === 'all' || vendor.location === locationFilter;
+    
+    return matchesSearch && matchesStatus && matchesType && matchesLocation;
   });
 
-  const addMutation = useMutation({
-    mutationFn: async (vendorData: Omit<Vendor, 'id' | 'isActive' | 'joinDate'>) =>
-      (await axiosInstance.post('/api/admin/vendors', vendorData)).data,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendors'] });
-      setShowAddForm(false);
-      toast({ title: "Success", description: "Outlet saved successfully!" });
-      setFormData({
-        outletName: '', vendorName: '', vendorEmail: '', location: '', contact: '', outletType: 'Healthy Food'
-      });
-    }
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number, data: any }) =>
-      (await axiosInstance.put(`/api/admin/vendors/${id}`, data)).data,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendors'] });
-      setShowEditModal(false);
-      setSelectedVendor(null);
-      toast({ title: "Success", description: "Vendor updated successfully!" });
-    }
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: number) =>
-      (await axiosInstance.delete(`/api/admin/vendors/${id}`)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendors'] });
-      setShowDeleteConfirm(false);
-      setSelectedVendor(null);
-      toast({ title: "Success", description: "Vendor deleted successfully!" });
-    }
-  });
+  const totalVendors = vendors.length;
+  const activeVendors = vendors.filter(v => v.isActive).length;
+  const inactiveVendors = vendors.filter(v => !v.isActive).length;
 
   const generatePassword = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$';
@@ -112,35 +154,93 @@ const VendorManagement = () => {
   const handleAddVendor = (e) => {
     e.preventDefault();
     if (window.confirm('Are you sure you want to save this outlet?')) {
-      addMutation.mutate(formData);
+      const newVendor = {
+        id: vendors.length + 1,
+        ...formData,
+        isActive: true,
+        joinDate: new Date().toISOString().split('T')[0]
+      };
+      setVendors([...vendors, newVendor]);
+      setFormData({
+        outletName: '',
+        vendorName: '',
+        vendorEmail: '',
+        location: '',
+        contact: '',
+        outletType: 'Healthy Food'
+      });
+      setShowAddForm(false);
+      toast({
+        title: "Success",
+        description: "Outlet saved successfully!",
+      });
     }
   };
 
   const handleUpdateVendor = (e) => {
     e.preventDefault();
     if (window.confirm('Are you sure you want to update this vendor?')) {
-      updateMutation.mutate({ id: selectedVendor.id, data: formData });
+      setVendors(vendors.map(vendor => 
+        vendor.id === selectedVendor.id 
+          ? { ...vendor, ...formData }
+          : vendor
+      ));
+      setShowEditModal(false);
+      setSelectedVendor(null);
+      toast({
+        title: "Success",
+        description: "Vendor updated successfully!",
+      });
     }
   };
 
   const sendCredentialsEmail = async () => {
     setIsLoading(true);
+    
     try {
-      await axiosInstance.post(`/api/admin/vendors/${selectedVendor.id}/credentials`, {
-        ...credentials,
-        vendorEmail: selectedVendor.vendorEmail
-      });
+      // Initialize EmailJS with your public key
+      emailjs.init("YOUR_PUBLIC_KEY"); // Replace with your actual EmailJS public key
+      
+      const templateParams = {
+        to_email: credentials.username,
+        vendor_name: selectedVendor.vendorName,
+        outlet_name: selectedVendor.outletName,
+        username: credentials.username,
+        password: credentials.password,
+        from_name: "Bites Space Admin"
+      };
+
+      await emailjs.send(
+        "YOUR_SERVICE_ID", // Replace with your EmailJS service ID
+        "YOUR_TEMPLATE_ID", // Replace with your EmailJS template ID
+        templateParams
+      );
+
       setShowCredentialsModal(false);
-      toast({ title: "Success", description: "Credentials sent successfully to vendor's email!" });
+      toast({
+        title: "Success",
+        description: "Credentials sent successfully to vendor's email!",
+      });
     } catch (error) {
-      toast({ title: "Error", description: "Failed to send credentials. Please try again.", variant: "destructive" });
+      console.error('Failed to send email:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send credentials. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDeleteVendor = () => {
-    deleteMutation.mutate(selectedVendor.id);
+    setVendors(vendors.filter(v => v.id !== selectedVendor.id));
+    setShowDeleteConfirm(false);
+    setSelectedVendor(null);
+    toast({
+      title: "Success",
+      description: "Vendor deleted successfully!",
+    });
   };
 
   return (
@@ -168,7 +268,7 @@ const VendorManagement = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Vendors</p>
-                  <p className="text-3xl font-bold text-gray-800">{vendors.length}</p>
+                  <p className="text-3xl font-bold text-gray-800">{totalVendors}</p>
                 </div>
                 <div className="p-3 bg-blue-100 rounded-full">
                   <ToggleRight className="w-8 h-8 text-blue-600" />
@@ -184,7 +284,7 @@ const VendorManagement = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Active</p>
-                  <p className="text-3xl font-bold text-green-600">{vendors.filter(v => v.isActive).length}</p>
+                  <p className="text-3xl font-bold text-green-600">{activeVendors}</p>
                 </div>
                 <div className="p-3 bg-green-100 rounded-full">
                   <ToggleRight className="w-8 h-8 text-green-600" />
@@ -200,7 +300,7 @@ const VendorManagement = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Inactive</p>
-                  <p className="text-3xl font-bold text-red-600">{vendors.filter(v => !v.isActive).length}</p>
+                  <p className="text-3xl font-bold text-red-600">{inactiveVendors}</p>
                 </div>
                 <div className="p-3 bg-red-100 rounded-full">
                   <ToggleLeft className="w-8 h-8 text-red-600" />
@@ -265,7 +365,7 @@ const VendorManagement = () => {
       {/* Vendors Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Vendors ({vendors.length})</CardTitle>
+          <CardTitle>All Vendors ({filteredVendors.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -282,7 +382,7 @@ const VendorManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {vendors.map((vendor) => (
+                {filteredVendors.map((vendor) => (
                   <motion.tr
                     key={vendor.id}
                     className="border-b hover:bg-gray-50"
