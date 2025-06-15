@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -11,35 +10,34 @@ import {
   LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AdminSidebarProps {
   activeSection: string;
-  setActiveSection: (section: string) => void;
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
 }
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({
   activeSection,
-  setActiveSection,
   collapsed,
   setCollapsed
 }) => {
   const [showProfile, setShowProfile] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const { logout } = useAuth();
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'vendors', label: 'Vendors', icon: Store },
-    { id: 'tickets', label: 'Tickets', icon: Ticket }
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin-dashboard' },
+    { id: 'vendors', label: 'Vendors', icon: Store, path: '/admin-dashboard/vendors' },
+    { id: 'tickets', label: 'Tickets', icon: Ticket, path: '/admin-dashboard/tickets' }
   ];
 
   const handleLogout = () => {
     setShowLogoutConfirm(false);
     setShowProfile(false);
-    setTimeout(() => {
-      window.location.href = '/';
-    }, 500);
+    logout();
   };
 
   const handleProfileClick = () => {
@@ -108,24 +106,24 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
             const isActive = activeSection === item.id;
             
             return (
-              <motion.button
-                key={item.id}
-                onClick={() => setActiveSection(item.id)}
-                className={`w-full flex items-center px-6 py-4 text-left transition-all duration-200 hover:bg-blue-50 ${
-                  isActive ? 'bg-blue-100 border-r-4 border-blue-600 text-blue-700' : 'text-gray-600'
-                }`}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ x: 4 }}
-              >
-                <Icon className={`w-6 h-6 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} />
-                {!collapsed && (
-                  <span className="ml-4 font-medium text-lg" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                    {item.label}
-                  </span>
-                )}
-              </motion.button>
+              <Link to={item.path} key={item.id}>
+                <motion.div
+                  className={`w-full flex items-center px-6 py-4 text-left transition-all duration-200 hover:bg-blue-50 ${
+                    isActive ? 'bg-blue-100 border-r-4 border-blue-600 text-blue-700' : 'text-gray-600'
+                  }`}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ x: 4 }}
+                >
+                  <Icon className={`w-6 h-6 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} />
+                  {!collapsed && (
+                    <span className="ml-4 font-medium text-lg" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                      {item.label}
+                    </span>
+                  )}
+                </motion.div>
+              </Link>
             );
           })}
         </nav>
