@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '@/api/axiosInstance';
@@ -8,6 +7,9 @@ import { useToast } from "@/components/ui/use-toast";
 interface User {
   username: string;
   isInitialPassword: boolean;
+  name?: string; // Display name, fallback to username if not provided
+  role?: string; // User role, default to 'Admin' for admin users
+  lastLogin?: string; // Last login timestamp
 }
 
 interface AuthContextType {
@@ -66,10 +68,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error('No authentication token received');
       }
 
-      // Store token and update state
+      // Store token and update state with enhanced user data
       localStorage.setItem('jwtToken', jwtToken);
       setToken(jwtToken);
-      setUser({ username, isInitialPassword });
+      setUser({ 
+        username, 
+        isInitialPassword,
+        name: username, // Use username as display name
+        role: userType === 'admin' ? 'Administrator' : 'Vendor',
+        lastLogin: new Date().toLocaleString()
+      });
       console.log('[LOGIN] Token stored successfully, user set:', { username, isInitialPassword });
 
       if (isInitialPassword) {
@@ -127,10 +135,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       const { jwtToken, username, isInitialPassword } = response.data;
       
-      // Update token and user state
+      // Update token and user state with enhanced user data
       localStorage.setItem('jwtToken', jwtToken);
       setToken(jwtToken);
-      setUser({ username, isInitialPassword });
+      setUser({ 
+        username, 
+        isInitialPassword,
+        name: username,
+        role: 'Administrator',
+        lastLogin: new Date().toLocaleString()
+      });
       
       toast({
         title: "Password Changed",
