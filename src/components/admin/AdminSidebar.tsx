@@ -26,7 +26,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
 }) => {
   const [showProfile, setShowProfile] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin-dashboard' },
@@ -141,16 +141,16 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
             <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
               <User className="w-7 h-7 text-white" />
             </div>
-            {!collapsed && (
+            {!collapsed && user && (
               <div className="text-left">
-                <p className="text-sm font-medium text-gray-800">Admin</p>
-                <p className="text-xs text-gray-600">EatInCognizant</p>
+                <p className="text-sm font-medium text-gray-800">{user.name}</p>
+                <p className="text-xs text-gray-600">{user.username}</p>
               </div>
             )}
           </motion.button>
 
           <AnimatePresence>
-            {showProfile && !collapsed && (
+            {showProfile && !collapsed && user && (
               <motion.div
                 initial={{ opacity: 0, height: 0, y: 20 }}
                 animate={{ opacity: 1, height: 'auto', y: 0 }}
@@ -164,15 +164,15 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                       <User className="w-9 h-9 text-white" />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-800">Administrator</p>
-                      <p className="text-gray-600">System Admin</p>
+                      <p className="font-semibold text-gray-800">{user.name}</p>
+                      <p className="text-gray-600">{user.role}</p>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <p><span className="font-medium text-gray-700">Name:</span> Administrator</p>
-                    <p><span className="font-medium text-gray-700">Username:</span> EatInCognizant</p>
-                    <p><span className="font-medium text-gray-700">Role:</span> System Admin</p>
-                    <p><span className="font-medium text-gray-700">Last Login:</span> Today</p>
+                    <p><span className="font-medium text-gray-700">Name:</span> {user.name}</p>
+                    <p><span className="font-medium text-gray-700">Username:</span> {user.username}</p>
+                    <p><span className="font-medium text-gray-700">Role:</span> {user.role}</p>
+                    <p><span className="font-medium text-gray-700">Last Login:</span> {user.lastLogin || 'Today'}</p>
                   </div>
                   <Button
                     onClick={() => setShowLogoutConfirm(true)}
