@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Eye, Edit, Trash2, ToggleLeft, ToggleRight, Key, RefreshCw, Send, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import VendorSearch from './VendorSearch';
 import axiosInstance from '@/api/axiosInstance';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Vendor {
   id: number;
@@ -22,7 +24,22 @@ interface Vendor {
   joinDate: string;
 }
 
+const fetchVendors = async (searchTerm: string, statusFilter: string, typeFilter: string, locationFilter: string): Promise<Vendor[]> => {
+  const { data } = await axiosInstance.get('/admin/vendors', {
+    params: {
+      search: searchTerm || null,
+      status: statusFilter === 'all' ? null : statusFilter,
+      type: typeFilter === 'all' ? null : typeFilter,
+      location: locationFilter === 'all' ? null : locationFilter,
+    },
+  });
+  return data;
+};
+
 const VendorManagement = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [showCredentialsModal, setShowCredentialsModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -34,8 +51,6 @@ const VendorManagement = () => {
   const [typeFilter, setTypeFilter] = useState('all');
   const [locationFilter, setLocationFilter] = useState('all');
   const [credentials, setCredentials] = useState({ username: '', password: '' });
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const [formData, setFormData] = useState({
     outletName: '',
     vendorName: '',
@@ -45,46 +60,95 @@ const VendorManagement = () => {
     outletType: 'Healthy Food'
   });
 
-  const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [loadingVendors, setLoadingVendors] = useState(true);
+  const { data: vendors = [], isLoading: loadingVendors, isError } = useQuery<Vendor[]>({
+    queryKey: ['vendors', searchTerm, statusFilter, typeFilter, locationFilter],
+    queryFn: () => fetchVendors(searchTerm, statusFilter, typeFilter, locationFilter),
+  });
 
-  useEffect(() => {
-    fetchVendors();
-  }, [searchTerm, statusFilter, typeFilter, locationFilter]);
-
-  const fetchVendors = async () => {
-    setLoadingVendors(true);
-    try {
-      const response = await axiosInstance.get('/admin/vendors', {
-        params: {
-          search: searchTerm || null,
-          status: statusFilter === 'all' ? null : statusFilter,
-          type: typeFilter === 'all' ? null : typeFilter,
-          location: locationFilter === 'all' ? null : locationFilter,
-        },
-      });
-      setVendors(response.data);
-    } catch (error) {
-      console.error('Error fetching vendors:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load vendors.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingVendors(false);
-    }
+  const invalidateVendorsQuery = () => {
+    queryClient.invalidateQueries({ queryKey: ['vendors'] });
   };
 
-  const filteredVendors = vendors.filter(vendor => {
-    const matchesSearch = searchTerm === '' || vendor.outletName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' ||
-      (statusFilter === 'active' && vendor.isActive) ||
-      (statusFilter === 'inactive' && !vendor.isActive);
-    const matchesType = typeFilter === 'all' || vendor.outletType === typeFilter;
-    const matchesLocation = locationFilter === 'all' || vendor.location === locationFilter;
+  const addVendorMutation = useMutation({
+    mutationFn: (newVendor: Omit<Vendor, 'id' | 'isActive' | 'joinDate'>) => axiosInstance.post('/admin/vendors', newVendor),
+    onSuccess: () => {
+      invalidateVendorsQuery();
+      setShowAddForm(false);
+      toast({ title: "Success", description: "Outlet saved successfully!" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to create vendor.",
+        variant: "destructive",
+      });
+    },
+  });
 
-    return matchesSearch && matchesStatus && matchesType && matchesLocation;
+  const updateVendorMutation = useMutation({
+    mutationFn: (updatedVendor: { id: number; data: Omit<Vendor, 'id' | 'isActive' | 'joinDate'> }) =>
+      axiosInstance.put(`/admin/vendors/${updatedVendor.id}`, updatedVendor.data),
+    onSuccess: () => {
+      invalidateVendorsQuery();
+      setShowEditModal(false);
+      setSelectedVendor(null);
+      toast({ title: "Success", description: "Vendor updated successfully!" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update vendor.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteVendorMutation = useMutation({
+    mutationFn: (vendorId: number) => axiosInstance.delete(`/admin/vendors/${vendorId}`),
+    onSuccess: () => {
+      invalidateVendorsQuery();
+      setShowDeleteConfirm(false);
+      setSelectedVendor(null);
+      toast({ title: "Success", description: "Vendor deleted successfully!" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to delete vendor.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const toggleStatusMutation = useMutation({
+    mutationFn: (vendorId: number) => axiosInstance.put(`/admin/vendors/${vendorId}/status`),
+    onSuccess: () => {
+      invalidateVendorsQuery();
+      toast({ title: "Success", description: "Vendor status toggled successfully!" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to toggle vendor status.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const sendCredentialsMutation = useMutation({
+    mutationFn: (data: { id: number; credentials: { username: string; password: string } }) =>
+      axiosInstance.post(`/admin/vendors/${data.id}/credentials`, data.credentials),
+    onSuccess: () => {
+      setShowCredentialsModal(false);
+      toast({ title: "Success", description: "Credentials sent successfully to vendor's email!" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to send credentials.",
+        variant: "destructive",
+      });
+    },
   });
 
   const totalVendors = vendors.length;
@@ -100,134 +164,37 @@ const VendorManagement = () => {
     setCredentials(prev => ({ ...prev, password }));
   };
 
-  const handleAddVendor = async (e: React.FormEvent) => {
+  const handleAddVendor = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    try {
-      const response = await axiosInstance.post('/admin/vendors', formData);
-      setVendors([...vendors, response.data]);
-      setFormData({
-        outletName: '',
-        vendorName: '',
-        vendorEmail: '',
-        location: '',
-        contact: '',
-        outletType: 'Healthy Food'
-      });
-      setShowAddForm(false);
-      toast({
-        title: "Success",
-        description: "Outlet saved successfully!",
-      });
-      fetchVendors();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to create vendor.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    addVendorMutation.mutate(formData);
   };
 
-  const handleUpdateVendor = async (e: React.FormEvent) => {
+  const handleUpdateVendor = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    try {
-      if (!selectedVendor) {
-        throw new Error("No vendor selected for update.");
-      }
-      await axiosInstance.put(`/admin/vendors/${selectedVendor.id}`, formData);
-      fetchVendors();
-      setShowEditModal(false);
-      setSelectedVendor(null);
-      toast({
-        title: "Success",
-        description: "Vendor updated successfully!",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update vendor.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+    if (selectedVendor) {
+      updateVendorMutation.mutate({ id: selectedVendor.id, data: formData });
     }
   };
 
-  const sendCredentialsEmail = async () => {
-    setIsLoading(true);
-
-    try {
-      if (!selectedVendor) {
-        throw new Error("No vendor selected to send credentials.");
-      }
-
-      await axiosInstance.post(`/admin/vendors/${selectedVendor.id}/credentials`, {
-        username: credentials.username,
-        password: credentials.password,
-      });
-
-      setShowCredentialsModal(false);
-      toast({
-        title: "Success",
-        description: "Credentials sent successfully to vendor's email!",
-      });
-    } catch (error: any) {
-      console.error('Failed to send email:', error);
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to send credentials. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+  const sendCredentialsEmail = () => {
+    if (selectedVendor) {
+      sendCredentialsMutation.mutate({ id: selectedVendor.id, credentials });
     }
   };
 
-  const handleDeleteVendor = async () => {
-    setIsLoading(true);
-    try {
-      if (!selectedVendor) {
-        throw new Error("No vendor selected for deletion.");
-      }
-      await axiosInstance.delete(`/admin/vendors/${selectedVendor.id}`);
-      fetchVendors();
-      setShowDeleteConfirm(false);
-      setSelectedVendor(null);
-      toast({
-        title: "Success",
-        description: "Vendor deleted successfully!",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to delete vendor.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+  const handleDeleteVendor = () => {
+    if (selectedVendor) {
+      deleteVendorMutation.mutate(selectedVendor.id);
     }
   };
 
-  const toggleVendorStatus = async (id: number) => {
-    try {
-      await axiosInstance.put(`/admin/vendors/${id}/status`);
-      fetchVendors();
-      toast({
-        title: "Success",
-        description: "Vendor status toggled successfully!",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to toggle vendor status.",
-        variant: "destructive",
-      });
-    }
+  const toggleVendorStatus = (id: number) => {
+    toggleStatusMutation.mutate(id);
   };
+
+  if (isError) {
+    return <div className="text-center text-red-500">Failed to load vendors. Please try again later.</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -251,7 +218,7 @@ const VendorManagement = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Vendors</p>
-                  <p className="text-3xl font-bold text-gray-800">{totalVendors}</p>
+                  <p className="text-3xl font-bold text-gray-800">{loadingVendors ? <Skeleton className="h-8 w-16" /> : totalVendors}</p>
                 </div>
                 <div className="p-3 bg-blue-100 rounded-full">
                   <ToggleRight className="w-8 h-8 text-blue-600" />
@@ -267,7 +234,7 @@ const VendorManagement = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Active</p>
-                  <p className="text-3xl font-bold text-green-600">{activeVendors}</p>
+                  <p className="text-3xl font-bold text-green-600">{loadingVendors ? <Skeleton className="h-8 w-16" /> : activeVendors}</p>
                 </div>
                 <div className="p-3 bg-green-100 rounded-full">
                   <ToggleRight className="w-8 h-8 text-green-600" />
@@ -283,7 +250,7 @@ const VendorManagement = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Inactive</p>
-                  <p className="text-3xl font-bold text-red-600">{inactiveVendors}</p>
+                  <p className="text-3xl font-bold text-red-600">{loadingVendors ? <Skeleton className="h-8 w-16" /> : inactiveVendors}</p>
                 </div>
                 <div className="p-3 bg-red-100 rounded-full">
                   <ToggleLeft className="w-8 h-8 text-red-600" />
@@ -346,7 +313,7 @@ const VendorManagement = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Vendors ({filteredVendors.length})</CardTitle>
+          <CardTitle>All Vendors ({vendors.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -364,11 +331,21 @@ const VendorManagement = () => {
               </thead>
               <tbody>
                 {loadingVendors ? (
-                  <tr><td colSpan={7} className="text-center p-8">Loading vendors...</td></tr>
-                ) : filteredVendors.length === 0 ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i} className="border-b">
+                      <td className="p-4"><Skeleton className="h-5 w-32" /></td>
+                      <td className="p-4"><Skeleton className="h-5 w-24" /></td>
+                      <td className="p-4"><Skeleton className="h-5 w-40" /></td>
+                      <td className="p-4"><Skeleton className="h-5 w-24" /></td>
+                      <td className="p-4"><Skeleton className="h-5 w-20" /></td>
+                      <td className="p-4"><Skeleton className="h-6 w-16 rounded-full" /></td>
+                      <td className="p-4"><Skeleton className="h-8 w-48" /></td>
+                    </tr>
+                  ))
+                ) : vendors.length === 0 ? (
                   <tr><td colSpan={7} className="text-center p-8">No vendors found.</td></tr>
                 ) : (
-                  filteredVendors.map((vendor) => (
+                  vendors.map((vendor) => (
                     <motion.tr
                       key={vendor.id}
                       className="border-b hover:bg-gray-50"
@@ -572,9 +549,9 @@ const VendorManagement = () => {
                   <Button
                     type="submit"
                     className="flex-1 bg-green-600 hover:bg-green-700"
-                    disabled={isLoading}
+                    disabled={addVendorMutation.isPending}
                   >
-                    {isLoading ? 'Saving...' : 'Save'}
+                    {addVendorMutation.isPending ? 'Saving...' : 'Save'}
                   </Button>
                 </div>
               </form>
@@ -683,9 +660,9 @@ const VendorManagement = () => {
                   <Button
                     type="submit"
                     className="flex-1 bg-green-600 hover:bg-green-700"
-                    disabled={isLoading}
+                    disabled={updateVendorMutation.isPending}
                   >
-                    {isLoading ? 'Updating...' : 'Update'}
+                    {updateVendorMutation.isPending ? 'Updating...' : 'Update'}
                   </Button>
                 </div>
               </form>
@@ -746,11 +723,11 @@ const VendorManagement = () => {
                 </Button>
                 <Button
                   onClick={sendCredentialsEmail}
-                  disabled={isLoading}
+                  disabled={sendCredentialsMutation.isPending}
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
                 >
                   <Send className="w-4 h-4 mr-2" />
-                  {isLoading ? 'Sending...' : 'Send Credentials'}
+                  {sendCredentialsMutation.isPending ? 'Sending...' : 'Send Credentials'}
                 </Button>
               </div>
             </motion.div>
@@ -786,7 +763,7 @@ const VendorManagement = () => {
                     {selectedVendor.isActive ? "Active" : "Inactive"}
                   </Badge>
                 </div>
-                <div><strong>Join Date:</strong> {selectedVendor.joinDate}</div>
+                <div><strong>Join Date:</strong> {new Date(selectedVendor.joinDate).toLocaleDateString()}</div>
               </div>
               <Button
                 onClick={() => setShowViewModal(false)}
@@ -826,9 +803,9 @@ const VendorManagement = () => {
                 <Button
                   onClick={handleDeleteVendor}
                   className="flex-1 bg-red-600 hover:bg-red-700"
-                  disabled={isLoading}
+                  disabled={deleteVendorMutation.isPending}
                 >
-                  {isLoading ? 'Deleting...' : 'Delete'}
+                  {deleteVendorMutation.isPending ? 'Deleting...' : 'Delete'}
                 </Button>
               </div>
             </motion.div>
