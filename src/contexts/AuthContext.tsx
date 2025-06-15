@@ -58,13 +58,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         username: credentials.username,
         password: credentials.password
       });
-      
-      console.log('[LOGIN] Login response received:', response.data);
-      
+
+      // DEBUG: Print entire response here!
+      console.log('[LOGIN] Full server response:', response);
+
       const { jwtToken, username, isInitialPassword } = response.data;
       
       if (!jwtToken) {
-        console.error('[LOGIN] No jwtToken in response');
+        console.error('[LOGIN] No jwtToken in response. response.data:', response.data);
         throw new Error('No authentication token received');
       }
 
