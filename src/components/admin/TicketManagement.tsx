@@ -1,62 +1,76 @@
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, Edit, CheckCircle, XCircle, AlertTriangle, Clock, User, MessageSquare, ChevronDown } from 'lucide-react';
+// Remove import of '@radix-ui/react-icons', use lucide-react icons only
+import { Eye, Edit, CheckCircle, XCircle, AlertTriangle, Clock, User, MessageSquare, ChevronDown, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon } from '@radix-ui/react-icons';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
 import axiosInstance from '@/api/axiosInstance';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
+type Ticket = {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  priority: string;
+  createdAt: string;
+  vendor: string;
+};
+
 const TicketManagement = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
   const [vendorFilter, setVendorFilter] = useState('');
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false);
   const [isVendorPopoverOpen, setIsVendorPopoverOpen] = useState(false);
   const [newStatus, setNewStatus] = useState('');
-  const { toast } = useToast()
+  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Fetch tickets
-  const { data: tickets = [], isLoading } = useQuery({
+  const { data: tickets = [], isLoading } = useQuery<Ticket[]>({
     queryKey: ['tickets'],
     queryFn: async () => (await axiosInstance.get('/api/admin/tickets')).data
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, newStatus }) =>
+    mutationFn: async ({ id, newStatus }: { id: string, newStatus: string }) =>
       (await axiosInstance.put(`/api/admin/tickets/${id}/status`, null, { params: { newStatus } })).data,
-    onSuccess: () => queryClient.invalidateQueries(['tickets'])
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      toast({
+        title: "Status Updated",
+        description: "Ticket status updated successfully.",
+      });
+    }
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id) =>
+    mutationFn: async (id: string) =>
       (await axiosInstance.delete(`/api/admin/tickets/${id}`)),
-    onSuccess: () => queryClient.invalidateQueries(['tickets'])
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+    }
   });
 
   const handleStatusUpdate = (ticketId: string, newStatus: string) => {
     updateStatusMutation.mutate({ id: ticketId, newStatus });
     setShowEditModal(false);
-    toast({
-      title: "Status Updated",
-      description: "Ticket status updated successfully.",
-    })
   };
 
   const formatDate = (date: Date | undefined) => {
@@ -73,7 +87,6 @@ const TicketManagement = () => {
     const matchesStatus = !statusFilter || ticket.status === statusFilter;
     const matchesDate = !dateFilter || formatDate(dateFilter) === formatDate(new Date(ticket.createdAt));
     const matchesVendor = !vendorFilter || ticket.vendor === vendorFilter;
-
     return matchesSearch && matchesStatus && matchesDate && matchesVendor;
   });
 
@@ -81,7 +94,7 @@ const TicketManagement = () => {
     { value: 'open', label: 'Open' },
     { value: 'pending', label: 'Pending' },
     { value: 'resolved', label: 'Resolved' },
-    { value: 'closed', label: 'Closed' },
+    { value: 'closed', label: 'Closed' }
   ];
 
   const vendorOptions = [...new Set(tickets.map(ticket => ticket.vendor))].map(vendor => ({
@@ -126,13 +139,14 @@ const TicketManagement = () => {
             <Popover open={isDatePopoverOpen} onOpenChange={setIsDatePopoverOpen}>
               <PopoverTrigger asChild>
                 <Button
-                  variant={"outline"}
+                  variant="outline"
                   className={cn(
                     "justify-start text-left font-normal",
                     !dateFilter && "text-muted-foreground"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {/* Use allowed icon */}
+                  <ArrowDown className="mr-2 h-4 w-4" />
                   {dateFilter ? (
                     format(dateFilter, "PPP")
                   ) : (
@@ -213,7 +227,7 @@ const TicketManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredTickets?.map((ticket) => (
+                {filteredTickets && filteredTickets.map((ticket) => (
                   <motion.tr
                     key={ticket.id}
                     className="border-b hover:bg-gray-50"

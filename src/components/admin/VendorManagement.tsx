@@ -12,6 +12,19 @@ import VendorSearch from './VendorSearch';
 import axiosInstance from "@/api/axiosInstance";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
+// Define Vendor type for query result
+type Vendor = {
+  id: number;
+  outletName: string;
+  vendorName: string;
+  vendorEmail: string;
+  location: string;
+  contact: string;
+  outletType: string;
+  isActive: boolean;
+  joinDate: string;
+};
+
 const VendorManagement = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showCredentialsModal, setShowCredentialsModal] = useState(false);
@@ -38,7 +51,7 @@ const VendorManagement = () => {
 
   const queryClient = useQueryClient();
 
-  const { data: vendors = [], isLoading: loadingVendors } = useQuery({
+  const { data: vendors = [], isLoading: loadingVendors } = useQuery<Vendor[]>({
     queryKey: ['vendors', searchTerm, statusFilter, typeFilter, locationFilter],
     queryFn: async () => {
       const params: any = {};
@@ -47,16 +60,16 @@ const VendorManagement = () => {
       if (typeFilter !== 'all') params.type = typeFilter;
       if (locationFilter !== 'all') params.location = locationFilter;
 
-      const { data } = await axiosInstance.get('/admin/vendors', { params });
+      const { data } = await axiosInstance.get('/api/admin/vendors', { params });
       return data;
     }
   });
 
   const addMutation = useMutation({
-    mutationFn: async (vendorData) =>
-      (await axiosInstance.post('/admin/vendors', vendorData)).data,
+    mutationFn: async (vendorData: Omit<Vendor, 'id' | 'isActive' | 'joinDate'>) =>
+      (await axiosInstance.post('/api/admin/vendors', vendorData)).data,
     onSuccess: () => {
-      queryClient.invalidateQueries(['vendors']);
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
       setShowAddForm(false);
       toast({ title: "Success", description: "Outlet saved successfully!" });
       setFormData({
@@ -66,10 +79,10 @@ const VendorManagement = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }) =>
-      (await axiosInstance.put(`/admin/vendors/${id}`, data)).data,
+    mutationFn: async ({ id, data }: { id: number, data: any }) =>
+      (await axiosInstance.put(`/api/admin/vendors/${id}`, data)).data,
     onSuccess: () => {
-      queryClient.invalidateQueries(['vendors']);
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
       setShowEditModal(false);
       setSelectedVendor(null);
       toast({ title: "Success", description: "Vendor updated successfully!" });
@@ -77,10 +90,10 @@ const VendorManagement = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id) =>
-      (await axiosInstance.delete(`/admin/vendors/${id}`)),
+    mutationFn: async (id: number) =>
+      (await axiosInstance.delete(`/api/admin/vendors/${id}`)),
     onSuccess: () => {
-      queryClient.invalidateQueries(['vendors']);
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
       setShowDeleteConfirm(false);
       setSelectedVendor(null);
       toast({ title: "Success", description: "Vendor deleted successfully!" });
@@ -113,7 +126,7 @@ const VendorManagement = () => {
   const sendCredentialsEmail = async () => {
     setIsLoading(true);
     try {
-      await axiosInstance.post(`/admin/vendors/${selectedVendor.id}/credentials`, {
+      await axiosInstance.post(`/api/admin/vendors/${selectedVendor.id}/credentials`, {
         ...credentials,
         vendorEmail: selectedVendor.vendorEmail
       });
