@@ -5,10 +5,14 @@ import AdminSidebar from '@/components/admin/AdminSidebar';
 import DashboardOverview from '@/components/admin/DashboardOverview';
 import VendorManagement from '@/components/admin/VendorManagement';
 import TicketManagement from '@/components/admin/TicketManagement';
+import { useAuth } from '@/context/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { user, logout } = useAuth();
 
   const renderContent = () => {
     switch (activeSection) {
@@ -33,6 +37,15 @@ const AdminDashboard = () => {
       />
       
       <div className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'ml-20' : 'ml-80'}`}>
+        <header className="p-4 flex justify-between items-center bg-white shadow-sm">
+            <h1 className="text-xl font-semibold">Welcome, {user?.username || 'Admin'}!</h1>
+            <div>
+              <Button variant="outline" asChild className="mr-2">
+                <Link to="/admin/change-password">Change Password</Link>
+              </Button>
+              <Button onClick={logout}>Logout</Button>
+            </div>
+        </header>
         <main className="p-8">
           <motion.div
             key={activeSection}

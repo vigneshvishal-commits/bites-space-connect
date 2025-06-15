@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Eye, Edit, Trash2, ToggleLeft, ToggleRight, Key, RefreshCw, Send, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,22 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import emailjs from '@emailjs/browser';
 import VendorSearch from './VendorSearch';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axiosInstance from '@/api/axiosInstance';
-import { Skeleton } from '../ui/skeleton';
-
-interface Vendor {
-  id: number;
-  outletName: string;
-  vendorName: string;
-  vendorEmail: string;
-  location: string;
-  contact: string;
-  outletType: string;
-  isActive: boolean;
-  joinDate: string;
-}
 
 const VendorManagement = () => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -30,16 +17,15 @@ const VendorManagement = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
+  const [selectedVendor, setSelectedVendor] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [locationFilter, setLocationFilter] = useState('all');
-  const [credentials, setCredentials] = useState({ email: '' });
-  
+  const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [showSuccess, setShowSuccess] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-
   const [formData, setFormData] = useState({
     outletName: '',
     vendorName: '',
@@ -48,101 +34,215 @@ const VendorManagement = () => {
     contact: '',
     outletType: 'Healthy Food'
   });
-  
-  const { data: vendors = [], isLoading: isLoadingVendors } = useQuery<Vendor[]>({
-    queryKey: ['vendors', searchTerm, statusFilter, typeFilter, locationFilter],
-    queryFn: () => axiosInstance.get('/admin/vendors', {
-      params: {
-        search: searchTerm || undefined,
-        status: statusFilter === 'all' ? undefined : statusFilter,
-        type: typeFilter === 'all' ? undefined : typeFilter,
-        location: locationFilter === 'all' ? undefined : locationFilter,
-      }
-    }).then(res => res.data)
-  });
 
-  const addVendorMutation = useMutation({
-    mutationFn: (newVendor: Omit<Vendor, 'id' | 'joinDate' | 'isActive'>) => axiosInstance.post('/admin/vendors', newVendor),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendors'] });
-      setShowAddForm(false);
-      toast({ title: "Success", description: "Outlet saved successfully!" });
+  // Mock vendor data
+  const [vendors, setVendors] = useState([
+    {
+      id: 1,
+      outletName: "Spice Paradise",
+      vendorName: "John Doe",
+      vendorEmail: "john.doe@cognizant.com",
+      location: "SRZ SDB Floor 1 Wing A",
+      contact: "+91 9876543210",
+      outletType: "Multi Cuisine",
+      isActive: true,
+      joinDate: "2024-01-15"
     },
-    onError: (err: any) => toast({ title: "Error", description: err.response?.data?.message || "Failed to add vendor.", variant: "destructive" })
-  });
-  
-  const updateVendorMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number, data: typeof formData }) => axiosInstance.put(`/admin/vendors/${id}`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendors'] });
-      setShowEditModal(false);
-      toast({ title: "Success", description: "Vendor updated successfully!" });
+    {
+      id: 2,
+      outletName: "Healthy Bites",
+      vendorName: "Sarah Smith",
+      vendorEmail: "sarah.smith@cognizant.com",
+      location: "SRZ SDB Floor 1 Wing B",
+      contact: "+91 9876543211",
+      outletType: "Healthy Food",
+      isActive: false,
+      joinDate: "2024-02-20"
     },
-    onError: (err: any) => toast({ title: "Error", description: err.response?.data?.message || "Failed to update vendor.", variant: "destructive" })
-  });
+    {
+      id: 3,
+      outletName: "Fast Corner",
+      vendorName: "Mike Johnson",
+      vendorEmail: "mike.johnson@cognizant.com",
+      location: "SRZ SDB2 Floor 2 Wing A",
+      contact: "+91 9876543212",
+      outletType: "Fast Food",
+      isActive: true,
+      joinDate: "2024-01-10"
+    },
+    {
+      id: 4,
+      outletName: "Cafe Delight",
+      vendorName: "Emily Davis",
+      vendorEmail: "emily.davis@cognizant.com",
+      location: "SRZ SDB1 Floor 2 Wing B",
+      contact: "+91 9876543213",
+      outletType: "Cafe and Beverages",
+      isActive: true,
+      joinDate: "2024-03-05"
+    },
+    {
+      id: 5,
+      outletName: "Snack Hub",
+      vendorName: "Robert Wilson",
+      vendorEmail: "robert.wilson@cognizant.com",
+      location: "SRZ SDB Floor 1 Wing A",
+      contact: "+91 9876543214",
+      outletType: "Snack and Refreshment",
+      isActive: false,
+      joinDate: "2024-02-28"
+    },
+    {
+      id: 6,
+      outletName: "Green Bowl",
+      vendorName: "Lisa Brown",
+      vendorEmail: "lisa.brown@cognizant.com",
+      location: "SRZ SDB Floor 1 Wing B",
+      contact: "+91 9876543215",
+      outletType: "Healthy Food",
+      isActive: true,
+      joinDate: "2024-03-12"
+    },
+    {
+      id: 7,
+      outletName: "Pizza Point",
+      vendorName: "David Miller",
+      vendorEmail: "david.miller@cognizant.com",
+      location: "SRZ SDB2 Floor 2 Wing A",
+      contact: "+91 9876543216",
+      outletType: "Fast Food",
+      isActive: true,
+      joinDate: "2024-01-22"
+    },
+    {
+      id: 8,
+      outletName: "Tea Time",
+      vendorName: "Anna Taylor",
+      vendorEmail: "anna.taylor@cognizant.com",
+      location: "SRZ SDB1 Floor 2 Wing B",
+      contact: "+91 9876543217",
+      outletType: "Cafe and Beverages",
+      isActive: true,
+      joinDate: "2024-03-08"
+    }
+  ]);
 
-  const deleteVendorMutation = useMutation({
-    mutationFn: (id: number) => axiosInstance.delete(`/admin/vendors/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendors'] });
-      setShowDeleteConfirm(false);
-      toast({ title: "Success", description: "Vendor deleted successfully!" });
-    },
-    onError: (err: any) => toast({ title: "Error", description: err.response?.data?.message || "Failed to delete vendor.", variant: "destructive" })
+  const filteredVendors = vendors.filter(vendor => {
+    const matchesSearch = searchTerm === '' || vendor.outletName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'active' && vendor.isActive) ||
+                         (statusFilter === 'inactive' && !vendor.isActive);
+    const matchesType = typeFilter === 'all' || vendor.outletType === typeFilter;
+    const matchesLocation = locationFilter === 'all' || vendor.location === locationFilter;
+    
+    return matchesSearch && matchesStatus && matchesType && matchesLocation;
   });
-  
-  const sendCredentialsMutation = useMutation({
-    mutationFn: ({ id, email }: { id: number, email: string }) => axiosInstance.post(`/admin/vendors/${id}/credentials`, { email }),
-    onSuccess: () => {
-      setShowCredentialsModal(false);
-      toast({ title: "Success", description: "Credentials sent successfully to vendor's email!" });
-    },
-    onError: (err: any) => toast({ title: "Error", description: err.response?.data?.message || "Failed to send credentials.", variant: "destructive" })
-  });
-
-  const handleAddVendor = (e: React.FormEvent) => {
-    e.preventDefault();
-    addVendorMutation.mutate(formData);
-  };
-  
-  const handleUpdateVendor = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedVendor) {
-      updateVendorMutation.mutate({ id: selectedVendor.id, data: formData });
-    }
-  };
-
-  const sendCredentialsEmail = () => {
-    if (selectedVendor) {
-      sendCredentialsMutation.mutate({ id: selectedVendor.id, email: selectedVendor.vendorEmail });
-    }
-  };
-  
-  const handleDeleteVendor = () => {
-    if (selectedVendor) {
-      deleteVendorMutation.mutate(selectedVendor.id);
-    }
-  };
-  
-  useEffect(() => {
-    if (selectedVendor) {
-      setFormData({
-        outletName: selectedVendor.outletName,
-        vendorName: selectedVendor.vendorName,
-        vendorEmail: selectedVendor.vendorEmail,
-        location: selectedVendor.location,
-        contact: selectedVendor.contact,
-        outletType: selectedVendor.outletType
-      });
-    } else {
-       setFormData({ outletName: '', vendorName: '', vendorEmail: '', location: '', contact: '', outletType: 'Healthy Food' });
-    }
-  }, [selectedVendor, showEditModal, showAddForm]);
 
   const totalVendors = vendors.length;
   const activeVendors = vendors.filter(v => v.isActive).length;
   const inactiveVendors = vendors.filter(v => !v.isActive).length;
-  
+
+  const generatePassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setCredentials(prev => ({ ...prev, password }));
+  };
+
+  const handleAddVendor = (e) => {
+    e.preventDefault();
+    if (window.confirm('Are you sure you want to save this outlet?')) {
+      const newVendor = {
+        id: vendors.length + 1,
+        ...formData,
+        isActive: true,
+        joinDate: new Date().toISOString().split('T')[0]
+      };
+      setVendors([...vendors, newVendor]);
+      setFormData({
+        outletName: '',
+        vendorName: '',
+        vendorEmail: '',
+        location: '',
+        contact: '',
+        outletType: 'Healthy Food'
+      });
+      setShowAddForm(false);
+      toast({
+        title: "Success",
+        description: "Outlet saved successfully!",
+      });
+    }
+  };
+
+  const handleUpdateVendor = (e) => {
+    e.preventDefault();
+    if (window.confirm('Are you sure you want to update this vendor?')) {
+      setVendors(vendors.map(vendor => 
+        vendor.id === selectedVendor.id 
+          ? { ...vendor, ...formData }
+          : vendor
+      ));
+      setShowEditModal(false);
+      setSelectedVendor(null);
+      toast({
+        title: "Success",
+        description: "Vendor updated successfully!",
+      });
+    }
+  };
+
+  const sendCredentialsEmail = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Initialize EmailJS with your public key
+      emailjs.init("YOUR_PUBLIC_KEY"); // Replace with your actual EmailJS public key
+      
+      const templateParams = {
+        to_email: credentials.username,
+        vendor_name: selectedVendor.vendorName,
+        outlet_name: selectedVendor.outletName,
+        username: credentials.username,
+        password: credentials.password,
+        from_name: "Bites Space Admin"
+      };
+
+      await emailjs.send(
+        "YOUR_SERVICE_ID", // Replace with your EmailJS service ID
+        "YOUR_TEMPLATE_ID", // Replace with your EmailJS template ID
+        templateParams
+      );
+
+      setShowCredentialsModal(false);
+      toast({
+        title: "Success",
+        description: "Credentials sent successfully to vendor's email!",
+      });
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send credentials. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteVendor = () => {
+    setVendors(vendors.filter(v => v.id !== selectedVendor.id));
+    setShowDeleteConfirm(false);
+    setSelectedVendor(null);
+    toast({
+      title: "Success",
+      description: "Vendor deleted successfully!",
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -152,7 +252,7 @@ const VendorManagement = () => {
           <p className="text-gray-600">Manage food outlets and vendors</p>
         </div>
         <Button 
-          onClick={() => { setSelectedVendor(null); setShowAddForm(true); }}
+          onClick={() => setShowAddForm(true)}
           className="bg-blue-600 hover:bg-blue-700 transform hover:scale-105 transition-all duration-200"
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -265,7 +365,7 @@ const VendorManagement = () => {
       {/* Vendors Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Vendors ({isLoadingVendors ? '...' : vendors.length})</CardTitle>
+          <CardTitle>All Vendors ({filteredVendors.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -282,12 +382,7 @@ const VendorManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {isLoadingVendors ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i}><td colSpan={7} className="p-4"><Skeleton className="h-8 w-full"/></td></tr>
-                  ))
-                ) : (
-                filteredVendors.map((vendor) => (
+                {filteredVendors.map((vendor) => (
                   <motion.tr
                     key={vendor.id}
                     className="border-b hover:bg-gray-50"
@@ -323,6 +418,14 @@ const VendorManagement = () => {
                           variant="outline"
                           onClick={() => {
                             setSelectedVendor(vendor);
+                            setFormData({
+                              outletName: vendor.outletName,
+                              vendorName: vendor.vendorName,
+                              vendorEmail: vendor.vendorEmail,
+                              location: vendor.location,
+                              contact: vendor.contact,
+                              outletType: vendor.outletType
+                            });
                             setShowEditModal(true);
                           }}
                           title="Edit Vendor"
@@ -347,7 +450,8 @@ const VendorManagement = () => {
                           variant="outline"
                           onClick={() => {
                             setSelectedVendor(vendor);
-                            setCredentials({ email: vendor.vendorEmail });
+                            setCredentials({ username: vendor.vendorEmail, password: '' });
+                            generatePassword();
                             setShowCredentialsModal(true);
                           }}
                           title="Generate Credentials"
@@ -358,8 +462,7 @@ const VendorManagement = () => {
                       </div>
                     </td>
                   </motion.tr>
-                ))
-                )}
+                ))}
               </tbody>
             </table>
           </div>
@@ -474,9 +577,8 @@ const VendorManagement = () => {
                   <Button 
                     type="submit"
                     className="flex-1 bg-green-600 hover:bg-green-700"
-                    disabled={addVendorMutation.isPending}
                   >
-                    {addVendorMutation.isPending ? 'Saving...' : 'Save'}
+                    Save
                   </Button>
                 </div>
               </form>
@@ -487,7 +589,7 @@ const VendorManagement = () => {
 
       {/* Edit Vendor Modal */}
       <AnimatePresence>
-        {showEditModal && selectedVendor && (
+        {showEditModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -586,9 +688,8 @@ const VendorManagement = () => {
                   <Button 
                     type="submit"
                     className="flex-1 bg-green-600 hover:bg-green-700"
-                    disabled={updateVendorMutation.isPending}
                   >
-                    {updateVendorMutation.isPending ? 'Updating...' : 'Update'}
+                    Update
                   </Button>
                 </div>
               </form>
@@ -599,7 +700,7 @@ const VendorManagement = () => {
 
       {/* Credentials Modal */}
       <AnimatePresence>
-        {showCredentialsModal && selectedVendor && (
+        {showCredentialsModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -612,9 +713,34 @@ const VendorManagement = () => {
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl"
             >
-              <h2 className="text-xl font-semibold mb-4">Generate & Send Credentials</h2>
-              <p className="text-gray-600 mb-6">Clicking "Send" will generate new credentials for <strong>{selectedVendor.vendorName}</strong> and email them to <strong>{selectedVendor.vendorEmail}</strong>.</p>
-              
+              <h2 className="text-xl font-semibold mb-4">Generate Credentials</h2>
+              <div className="space-y-4">
+                <div>
+                  <Label className="block text-sm font-medium mb-2">Username</Label>
+                  <Input 
+                    value={credentials.username}
+                    readOnly
+                    className="bg-gray-100"
+                  />
+                </div>
+                <div>
+                  <Label className="block text-sm font-medium mb-2">Password</Label>
+                  <div className="flex space-x-2">
+                    <Input 
+                      value={credentials.password}
+                      readOnly
+                      className="bg-gray-100"
+                    />
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      onClick={generatePassword}
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
               <div className="flex space-x-3 mt-6">
                 <Button
                   variant="outline"
@@ -625,11 +751,11 @@ const VendorManagement = () => {
                 </Button>
                 <Button
                   onClick={sendCredentialsEmail}
-                  disabled={sendCredentialsMutation.isPending}
+                  disabled={isLoading}
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
                 >
                   <Send className="w-4 h-4 mr-2" />
-                  {sendCredentialsMutation.isPending ? 'Sending...' : 'Send Credentials'}
+                  {isLoading ? 'Sending...' : 'Send Credentials'}
                 </Button>
               </div>
             </motion.div>
@@ -694,7 +820,7 @@ const VendorManagement = () => {
               className="bg-white rounded-lg p-6 w-96 shadow-xl"
             >
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Confirm Delete</h3>
-              <p className="text-gray-600 mb-6">Are you sure you want to delete <strong>{selectedVendor?.outletName}</strong>? This action cannot be undone.</p>
+              <p className="text-gray-600 mb-6">Are you sure you want to delete this vendor? This action cannot be undone.</p>
               <div className="flex space-x-3">
                 <Button
                   onClick={() => setShowDeleteConfirm(false)}
@@ -706,9 +832,8 @@ const VendorManagement = () => {
                 <Button
                   onClick={handleDeleteVendor}
                   className="flex-1 bg-red-600 hover:bg-red-700"
-                  disabled={deleteVendorMutation.isPending}
                 >
-                  {deleteVendorMutation.isPending ? 'Deleting...' : 'Delete'}
+                  Delete
                 </Button>
               </div>
             </motion.div>
