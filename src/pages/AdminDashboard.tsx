@@ -5,10 +5,14 @@ import AdminSidebar from '@/components/admin/AdminSidebar';
 import DashboardOverview from '@/components/admin/DashboardOverview';
 import VendorManagement from '@/components/admin/VendorManagement';
 import TicketManagement from '@/components/admin/TicketManagement';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { LogOut } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { logout } = useAuth();
 
   const renderContent = () => {
     switch (activeSection) {
@@ -33,7 +37,13 @@ const AdminDashboard = () => {
       />
       
       <div className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'ml-20' : 'ml-80'}`}>
-        <main className="p-8">
+        <header className="p-4 flex justify-end">
+            <Button variant="outline" onClick={logout}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+            </Button>
+        </header>
+        <main className="p-8 pt-0">
           <motion.div
             key={activeSection}
             initial={{ opacity: 0, y: 20 }}

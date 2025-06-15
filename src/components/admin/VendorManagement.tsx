@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Eye, Edit, Trash2, ToggleLeft, ToggleRight, Key, RefreshCw, Send, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,8 +7,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import emailjs from '@emailjs/browser';
 import VendorSearch from './VendorSearch';
+import axiosInstance from '@/api/axiosInstance';
+
+interface Vendor {
+  id: number;
+  outletName: string;
+  vendorName: string;
+  vendorEmail: string;
+  location: string;
+  contact: string;
+  outletType: string;
+  isActive: boolean;
+  joinDate: string;
+}
 
 const VendorManagement = () => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -17,13 +28,12 @@ const VendorManagement = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [selectedVendor, setSelectedVendor] = useState(null);
+  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [locationFilter, setLocationFilter] = useState('all');
   const [credentials, setCredentials] = useState({ username: '', password: '' });
-  const [showSuccess, setShowSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const [formData, setFormData] = useState({
@@ -35,106 +45,45 @@ const VendorManagement = () => {
     outletType: 'Healthy Food'
   });
 
-  // Mock vendor data
-  const [vendors, setVendors] = useState([
-    {
-      id: 1,
-      outletName: "Spice Paradise",
-      vendorName: "John Doe",
-      vendorEmail: "john.doe@cognizant.com",
-      location: "SRZ SDB Floor 1 Wing A",
-      contact: "+91 9876543210",
-      outletType: "Multi Cuisine",
-      isActive: true,
-      joinDate: "2024-01-15"
-    },
-    {
-      id: 2,
-      outletName: "Healthy Bites",
-      vendorName: "Sarah Smith",
-      vendorEmail: "sarah.smith@cognizant.com",
-      location: "SRZ SDB Floor 1 Wing B",
-      contact: "+91 9876543211",
-      outletType: "Healthy Food",
-      isActive: false,
-      joinDate: "2024-02-20"
-    },
-    {
-      id: 3,
-      outletName: "Fast Corner",
-      vendorName: "Mike Johnson",
-      vendorEmail: "mike.johnson@cognizant.com",
-      location: "SRZ SDB2 Floor 2 Wing A",
-      contact: "+91 9876543212",
-      outletType: "Fast Food",
-      isActive: true,
-      joinDate: "2024-01-10"
-    },
-    {
-      id: 4,
-      outletName: "Cafe Delight",
-      vendorName: "Emily Davis",
-      vendorEmail: "emily.davis@cognizant.com",
-      location: "SRZ SDB1 Floor 2 Wing B",
-      contact: "+91 9876543213",
-      outletType: "Cafe and Beverages",
-      isActive: true,
-      joinDate: "2024-03-05"
-    },
-    {
-      id: 5,
-      outletName: "Snack Hub",
-      vendorName: "Robert Wilson",
-      vendorEmail: "robert.wilson@cognizant.com",
-      location: "SRZ SDB Floor 1 Wing A",
-      contact: "+91 9876543214",
-      outletType: "Snack and Refreshment",
-      isActive: false,
-      joinDate: "2024-02-28"
-    },
-    {
-      id: 6,
-      outletName: "Green Bowl",
-      vendorName: "Lisa Brown",
-      vendorEmail: "lisa.brown@cognizant.com",
-      location: "SRZ SDB Floor 1 Wing B",
-      contact: "+91 9876543215",
-      outletType: "Healthy Food",
-      isActive: true,
-      joinDate: "2024-03-12"
-    },
-    {
-      id: 7,
-      outletName: "Pizza Point",
-      vendorName: "David Miller",
-      vendorEmail: "david.miller@cognizant.com",
-      location: "SRZ SDB2 Floor 2 Wing A",
-      contact: "+91 9876543216",
-      outletType: "Fast Food",
-      isActive: true,
-      joinDate: "2024-01-22"
-    },
-    {
-      id: 8,
-      outletName: "Tea Time",
-      vendorName: "Anna Taylor",
-      vendorEmail: "anna.taylor@cognizant.com",
-      location: "SRZ SDB1 Floor 2 Wing B",
-      contact: "+91 9876543217",
-      outletType: "Cafe and Beverages",
-      isActive: true,
-      joinDate: "2024-03-08"
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [loadingVendors, setLoadingVendors] = useState(true);
+
+  useEffect(() => {
+    fetchVendors();
+  }, [searchTerm, statusFilter, typeFilter, locationFilter]);
+
+  const fetchVendors = async () => {
+    setLoadingVendors(true);
+    try {
+      const response = await axiosInstance.get('/admin/vendors', {
+        params: {
+          search: searchTerm || null,
+          status: statusFilter === 'all' ? null : statusFilter,
+          type: typeFilter === 'all' ? null : typeFilter,
+          location: locationFilter === 'all' ? null : locationFilter,
+        },
+      });
+      setVendors(response.data);
+    } catch (error) {
+      console.error('Error fetching vendors:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load vendors.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingVendors(false);
     }
-  ]);
+  };
 
   const filteredVendors = vendors.filter(vendor => {
     const matchesSearch = searchTerm === '' || vendor.outletName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || 
-                         (statusFilter === 'active' && vendor.isActive) ||
-                         (statusFilter === 'inactive' && !vendor.isActive);
+    const matchesStatus = statusFilter === 'all' ||
+      (statusFilter === 'active' && vendor.isActive) ||
+      (statusFilter === 'inactive' && !vendor.isActive);
     const matchesType = typeFilter === 'all' || vendor.outletType === typeFilter;
     const matchesLocation = locationFilter === 'all' || vendor.location === locationFilter;
-    
+
     return matchesSearch && matchesStatus && matchesType && matchesLocation;
   });
 
@@ -151,16 +100,12 @@ const VendorManagement = () => {
     setCredentials(prev => ({ ...prev, password }));
   };
 
-  const handleAddVendor = (e) => {
+  const handleAddVendor = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (window.confirm('Are you sure you want to save this outlet?')) {
-      const newVendor = {
-        id: vendors.length + 1,
-        ...formData,
-        isActive: true,
-        joinDate: new Date().toISOString().split('T')[0]
-      };
-      setVendors([...vendors, newVendor]);
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.post('/admin/vendors', formData);
+      setVendors([...vendors, response.data]);
       setFormData({
         outletName: '',
         vendorName: '',
@@ -174,58 +119,11 @@ const VendorManagement = () => {
         title: "Success",
         description: "Outlet saved successfully!",
       });
-    }
-  };
-
-  const handleUpdateVendor = (e) => {
-    e.preventDefault();
-    if (window.confirm('Are you sure you want to update this vendor?')) {
-      setVendors(vendors.map(vendor => 
-        vendor.id === selectedVendor.id 
-          ? { ...vendor, ...formData }
-          : vendor
-      ));
-      setShowEditModal(false);
-      setSelectedVendor(null);
-      toast({
-        title: "Success",
-        description: "Vendor updated successfully!",
-      });
-    }
-  };
-
-  const sendCredentialsEmail = async () => {
-    setIsLoading(true);
-    
-    try {
-      // Initialize EmailJS with your public key
-      emailjs.init("YOUR_PUBLIC_KEY"); // Replace with your actual EmailJS public key
-      
-      const templateParams = {
-        to_email: credentials.username,
-        vendor_name: selectedVendor.vendorName,
-        outlet_name: selectedVendor.outletName,
-        username: credentials.username,
-        password: credentials.password,
-        from_name: "Bites Space Admin"
-      };
-
-      await emailjs.send(
-        "YOUR_SERVICE_ID", // Replace with your EmailJS service ID
-        "YOUR_TEMPLATE_ID", // Replace with your EmailJS template ID
-        templateParams
-      );
-
-      setShowCredentialsModal(false);
-      toast({
-        title: "Success",
-        description: "Credentials sent successfully to vendor's email!",
-      });
-    } catch (error) {
-      console.error('Failed to send email:', error);
+      fetchVendors();
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to send credentials. Please try again.",
+        description: error.response?.data?.message || "Failed to create vendor.",
         variant: "destructive",
       });
     } finally {
@@ -233,25 +131,112 @@ const VendorManagement = () => {
     }
   };
 
-  const handleDeleteVendor = () => {
-    setVendors(vendors.filter(v => v.id !== selectedVendor.id));
-    setShowDeleteConfirm(false);
-    setSelectedVendor(null);
-    toast({
-      title: "Success",
-      description: "Vendor deleted successfully!",
-    });
+  const handleUpdateVendor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      if (!selectedVendor) {
+        throw new Error("No vendor selected for update.");
+      }
+      await axiosInstance.put(`/admin/vendors/${selectedVendor.id}`, formData);
+      fetchVendors();
+      setShowEditModal(false);
+      setSelectedVendor(null);
+      toast({
+        title: "Success",
+        description: "Vendor updated successfully!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update vendor.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const sendCredentialsEmail = async () => {
+    setIsLoading(true);
+
+    try {
+      if (!selectedVendor) {
+        throw new Error("No vendor selected to send credentials.");
+      }
+
+      await axiosInstance.post(`/admin/vendors/${selectedVendor.id}/credentials`, {
+        username: credentials.username,
+        password: credentials.password,
+      });
+
+      setShowCredentialsModal(false);
+      toast({
+        title: "Success",
+        description: "Credentials sent successfully to vendor's email!",
+      });
+    } catch (error: any) {
+      console.error('Failed to send email:', error);
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to send credentials. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteVendor = async () => {
+    setIsLoading(true);
+    try {
+      if (!selectedVendor) {
+        throw new Error("No vendor selected for deletion.");
+      }
+      await axiosInstance.delete(`/admin/vendors/${selectedVendor.id}`);
+      fetchVendors();
+      setShowDeleteConfirm(false);
+      setSelectedVendor(null);
+      toast({
+        title: "Success",
+        description: "Vendor deleted successfully!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to delete vendor.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleVendorStatus = async (id: number) => {
+    try {
+      await axiosInstance.put(`/admin/vendors/${id}/status`);
+      fetchVendors();
+      toast({
+        title: "Success",
+        description: "Vendor status toggled successfully!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to toggle vendor status.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Vendor Management</h1>
           <p className="text-gray-600">Manage food outlets and vendors</p>
         </div>
-        <Button 
+        <Button
           onClick={() => setShowAddForm(true)}
           className="bg-blue-600 hover:bg-blue-700 transform hover:scale-105 transition-all duration-200"
         >
@@ -259,8 +244,6 @@ const VendorManagement = () => {
           Add New Outlet
         </Button>
       </div>
-
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card className="hover:shadow-lg transition-all duration-300">
@@ -311,11 +294,10 @@ const VendorManagement = () => {
         </motion.div>
       </div>
 
-      {/* Search and Filters */}
       <Card>
         <CardContent className="p-4">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-            <VendorSearch 
+            <VendorSearch
               vendors={vendors}
               onVendorSelect={(vendor) => {
                 setSearchTerm(vendor.outletName);
@@ -323,8 +305,8 @@ const VendorManagement = () => {
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
             />
-            
-            <select 
+
+            <select
               className="p-2 border rounded-md"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -333,8 +315,8 @@ const VendorManagement = () => {
               <option value="active">Active Only</option>
               <option value="inactive">Inactive Only</option>
             </select>
-            
-            <select 
+
+            <select
               className="p-2 border rounded-md"
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
@@ -346,8 +328,8 @@ const VendorManagement = () => {
               <option value="Multi Cuisine">Multi Cuisine</option>
               <option value="Snack and Refreshment">Snacks</option>
             </select>
-            
-            <select 
+
+            <select
               className="p-2 border rounded-md"
               value={locationFilter}
               onChange={(e) => setLocationFilter(e.target.value)}
@@ -362,7 +344,6 @@ const VendorManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Vendors Table */}
       <Card>
         <CardHeader>
           <CardTitle>All Vendors ({filteredVendors.length})</CardTitle>
@@ -382,94 +363,108 @@ const VendorManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredVendors.map((vendor) => (
-                  <motion.tr
-                    key={vendor.id}
-                    className="border-b hover:bg-gray-50"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    <td className="p-4 font-medium">{vendor.outletName}</td>
-                    <td className="p-4">{vendor.vendorName}</td>
-                    <td className="p-4">{vendor.vendorEmail}</td>
-                    <td className="p-4">{vendor.location}</td>
-                    <td className="p-4">{vendor.outletType}</td>
-                    <td className="p-4">
-                      <Badge variant={vendor.isActive ? "default" : "destructive"} className={vendor.isActive ? "bg-green-600" : ""}>
-                        {vendor.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex space-x-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedVendor(vendor);
-                            setShowViewModal(true);
-                          }}
-                          title="View Details"
-                          className="hover:bg-blue-50"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedVendor(vendor);
-                            setFormData({
-                              outletName: vendor.outletName,
-                              vendorName: vendor.vendorName,
-                              vendorEmail: vendor.vendorEmail,
-                              location: vendor.location,
-                              contact: vendor.contact,
-                              outletType: vendor.outletType
-                            });
-                            setShowEditModal(true);
-                          }}
-                          title="Edit Vendor"
-                          className="hover:bg-yellow-50"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedVendor(vendor);
-                            setShowDeleteConfirm(true);
-                          }}
-                          title="Delete Vendor"
-                          className="hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedVendor(vendor);
-                            setCredentials({ username: vendor.vendorEmail, password: '' });
-                            generatePassword();
-                            setShowCredentialsModal(true);
-                          }}
-                          title="Generate Credentials"
-                          className="hover:bg-green-50"
-                        >
-                          <Key className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
+                {loadingVendors ? (
+                  <tr><td colSpan={7} className="text-center p-8">Loading vendors...</td></tr>
+                ) : filteredVendors.length === 0 ? (
+                  <tr><td colSpan={7} className="text-center p-8">No vendors found.</td></tr>
+                ) : (
+                  filteredVendors.map((vendor) => (
+                    <motion.tr
+                      key={vendor.id}
+                      className="border-b hover:bg-gray-50"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      <td className="p-4 font-medium">{vendor.outletName}</td>
+                      <td className="p-4">{vendor.vendorName}</td>
+                      <td className="p-4">{vendor.vendorEmail}</td>
+                      <td className="p-4">{vendor.location}</td>
+                      <td className="p-4">{vendor.outletType}</td>
+                      <td className="p-4">
+                        <Badge variant={vendor.isActive ? "default" : "destructive"} className={vendor.isActive ? "bg-green-600" : ""}>
+                          {vendor.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedVendor(vendor);
+                              setShowViewModal(true);
+                            }}
+                            title="View Details"
+                            className="hover:bg-blue-50"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedVendor(vendor);
+                              setFormData({
+                                outletName: vendor.outletName,
+                                vendorName: vendor.vendorName,
+                                vendorEmail: vendor.vendorEmail,
+                                location: vendor.location,
+                                contact: vendor.contact,
+                                outletType: vendor.outletType
+                              });
+                              setShowEditModal(true);
+                            }}
+                            title="Edit Vendor"
+                            className="hover:bg-yellow-50"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedVendor(vendor);
+                              setShowDeleteConfirm(true);
+                            }}
+                            title="Delete Vendor"
+                            className="hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedVendor(vendor);
+                              setCredentials({ username: vendor.vendorEmail, password: '' });
+                              generatePassword();
+                              setShowCredentialsModal(true);
+                            }}
+                            title="Generate Credentials"
+                            className="hover:bg-green-50"
+                          >
+                            <Key className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => toggleVendorStatus(vendor.id)}
+                            title="Toggle Status"
+                            className="hover:bg-purple-50"
+                          >
+                            {vendor.isActive ? <ToggleLeft className="w-4 h-4" /> : <ToggleRight className="w-4 h-4" />}
+                          </Button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </CardContent>
       </Card>
 
-      {/* Add Vendor Modal */}
       <AnimatePresence>
         {showAddForm && (
           <motion.div
@@ -489,47 +484,47 @@ const VendorManagement = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div>
                     <Label className="block text-sm font-medium mb-2">Outlet Name *</Label>
-                    <Input 
-                      placeholder="Enter outlet name" 
+                    <Input
+                      placeholder="Enter outlet name"
                       value={formData.outletName}
-                      onChange={(e) => setFormData({...formData, outletName: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, outletName: e.target.value })}
                       required
                     />
                   </div>
                   <div>
                     <Label className="block text-sm font-medium mb-2">Vendor Name *</Label>
-                    <Input 
-                      placeholder="Enter vendor name" 
+                    <Input
+                      placeholder="Enter vendor name"
                       value={formData.vendorName}
-                      onChange={(e) => setFormData({...formData, vendorName: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, vendorName: e.target.value })}
                       required
                     />
                   </div>
                   <div>
                     <Label className="block text-sm font-medium mb-2">Vendor Email *</Label>
-                    <Input 
+                    <Input
                       type="email"
-                      placeholder="Enter vendor email" 
+                      placeholder="Enter vendor email"
                       value={formData.vendorEmail}
-                      onChange={(e) => setFormData({...formData, vendorEmail: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, vendorEmail: e.target.value })}
                       required
                     />
                   </div>
                   <div>
                     <Label className="block text-sm font-medium mb-2">Contact Number *</Label>
-                    <Input 
-                      placeholder="Enter contact number" 
+                    <Input
+                      placeholder="Enter contact number"
                       value={formData.contact}
-                      onChange={(e) => setFormData({...formData, contact: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
                       required
                     />
                   </div>
                   <div>
                     <Label className="block text-sm font-medium mb-2">Location *</Label>
-                    <select 
+                    <select
                       className="w-full p-2 border rounded-md"
                       value={formData.location}
-                      onChange={(e) => setFormData({...formData, location: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                       required
                     >
                       <option value="">Select Location</option>
@@ -541,10 +536,10 @@ const VendorManagement = () => {
                   </div>
                   <div>
                     <Label className="block text-sm font-medium mb-2">Outlet Type *</Label>
-                    <select 
+                    <select
                       className="w-full p-2 border rounded-md"
                       value={formData.outletType}
-                      onChange={(e) => setFormData({...formData, outletType: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, outletType: e.target.value })}
                     >
                       <option value="Healthy Food">Healthy Food</option>
                       <option value="Fast Food">Fast Food</option>
@@ -556,9 +551,9 @@ const VendorManagement = () => {
                   </div>
                 </div>
                 <div className="flex space-x-4">
-                  <Button 
+                  <Button
                     type="button"
-                    variant="outline" 
+                    variant="outline"
                     onClick={() => {
                       setShowAddForm(false);
                       setFormData({
@@ -574,11 +569,12 @@ const VendorManagement = () => {
                   >
                     Cancel
                   </Button>
-                  <Button 
+                  <Button
                     type="submit"
                     className="flex-1 bg-green-600 hover:bg-green-700"
+                    disabled={isLoading}
                   >
-                    Save
+                    {isLoading ? 'Saving...' : 'Save'}
                   </Button>
                 </div>
               </form>
@@ -587,9 +583,8 @@ const VendorManagement = () => {
         )}
       </AnimatePresence>
 
-      {/* Edit Vendor Modal */}
       <AnimatePresence>
-        {showEditModal && (
+        {showEditModal && selectedVendor && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -607,47 +602,47 @@ const VendorManagement = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div>
                     <Label className="block text-sm font-medium mb-2">Outlet Name *</Label>
-                    <Input 
-                      placeholder="Enter outlet name" 
+                    <Input
+                      placeholder="Enter outlet name"
                       value={formData.outletName}
-                      onChange={(e) => setFormData({...formData, outletName: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, outletName: e.target.value })}
                       required
                     />
                   </div>
                   <div>
                     <Label className="block text-sm font-medium mb-2">Vendor Name *</Label>
-                    <Input 
-                      placeholder="Enter vendor name" 
+                    <Input
+                      placeholder="Enter vendor name"
                       value={formData.vendorName}
-                      onChange={(e) => setFormData({...formData, vendorName: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, vendorName: e.target.value })}
                       required
                     />
                   </div>
                   <div>
                     <Label className="block text-sm font-medium mb-2">Vendor Email *</Label>
-                    <Input 
+                    <Input
                       type="email"
-                      placeholder="Enter vendor email" 
+                      placeholder="Enter vendor email"
                       value={formData.vendorEmail}
-                      onChange={(e) => setFormData({...formData, vendorEmail: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, vendorEmail: e.target.value })}
                       required
                     />
                   </div>
                   <div>
                     <Label className="block text-sm font-medium mb-2">Contact Number *</Label>
-                    <Input 
-                      placeholder="Enter contact number" 
+                    <Input
+                      placeholder="Enter contact number"
                       value={formData.contact}
-                      onChange={(e) => setFormData({...formData, contact: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
                       required
                     />
                   </div>
                   <div>
                     <Label className="block text-sm font-medium mb-2">Location *</Label>
-                    <select 
+                    <select
                       className="w-full p-2 border rounded-md"
                       value={formData.location}
-                      onChange={(e) => setFormData({...formData, location: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                       required
                     >
                       <option value="">Select Location</option>
@@ -659,10 +654,10 @@ const VendorManagement = () => {
                   </div>
                   <div>
                     <Label className="block text-sm font-medium mb-2">Outlet Type *</Label>
-                    <select 
+                    <select
                       className="w-full p-2 border rounded-md"
                       value={formData.outletType}
-                      onChange={(e) => setFormData({...formData, outletType: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, outletType: e.target.value })}
                     >
                       <option value="Healthy Food">Healthy Food</option>
                       <option value="Fast Food">Fast Food</option>
@@ -674,9 +669,9 @@ const VendorManagement = () => {
                   </div>
                 </div>
                 <div className="flex space-x-4">
-                  <Button 
+                  <Button
                     type="button"
-                    variant="outline" 
+                    variant="outline"
                     onClick={() => {
                       setShowEditModal(false);
                       setSelectedVendor(null);
@@ -685,11 +680,12 @@ const VendorManagement = () => {
                   >
                     Cancel
                   </Button>
-                  <Button 
+                  <Button
                     type="submit"
                     className="flex-1 bg-green-600 hover:bg-green-700"
+                    disabled={isLoading}
                   >
-                    Update
+                    {isLoading ? 'Updating...' : 'Update'}
                   </Button>
                 </div>
               </form>
@@ -698,9 +694,8 @@ const VendorManagement = () => {
         )}
       </AnimatePresence>
 
-      {/* Credentials Modal */}
       <AnimatePresence>
-        {showCredentialsModal && (
+        {showCredentialsModal && selectedVendor && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -717,7 +712,7 @@ const VendorManagement = () => {
               <div className="space-y-4">
                 <div>
                   <Label className="block text-sm font-medium mb-2">Username</Label>
-                  <Input 
+                  <Input
                     value={credentials.username}
                     readOnly
                     className="bg-gray-100"
@@ -726,12 +721,12 @@ const VendorManagement = () => {
                 <div>
                   <Label className="block text-sm font-medium mb-2">Password</Label>
                   <div className="flex space-x-2">
-                    <Input 
+                    <Input
                       value={credentials.password}
                       readOnly
                       className="bg-gray-100"
                     />
-                    <Button 
+                    <Button
                       type="button"
                       variant="outline"
                       onClick={generatePassword}
@@ -763,7 +758,6 @@ const VendorManagement = () => {
         )}
       </AnimatePresence>
 
-      {/* View Modal */}
       <AnimatePresence>
         {showViewModal && selectedVendor && (
           <motion.div
@@ -786,7 +780,8 @@ const VendorManagement = () => {
                 <div><strong>Contact:</strong> {selectedVendor.contact}</div>
                 <div><strong>Location:</strong> {selectedVendor.location}</div>
                 <div><strong>Type:</strong> {selectedVendor.outletType}</div>
-                <div><strong>Status:</strong> 
+                <div>
+                  <strong>Status:</strong>
                   <Badge variant={selectedVendor.isActive ? "default" : "destructive"} className="ml-2">
                     {selectedVendor.isActive ? "Active" : "Inactive"}
                   </Badge>
@@ -804,9 +799,8 @@ const VendorManagement = () => {
         )}
       </AnimatePresence>
 
-      {/* Delete Confirmation */}
       <AnimatePresence>
-        {showDeleteConfirm && (
+        {showDeleteConfirm && selectedVendor && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -832,8 +826,9 @@ const VendorManagement = () => {
                 <Button
                   onClick={handleDeleteVendor}
                   className="flex-1 bg-red-600 hover:bg-red-700"
+                  disabled={isLoading}
                 >
-                  Delete
+                  {isLoading ? 'Deleting...' : 'Delete'}
                 </Button>
               </div>
             </motion.div>

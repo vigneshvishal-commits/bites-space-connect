@@ -4,6 +4,7 @@ import { Eye, Flag, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+// TODO: Fetch data from /api/admin/tickets
 
 const TicketManagement = () => {
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -12,69 +13,12 @@ const TicketManagement = () => {
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
 
-  // Mock ticket data
-  const [tickets, setTickets] = useState([
-    {
-      id: "TKT001",
-      subject: "Food quality issue",
-      description: "The food was cold when delivered and the taste was not up to the mark. I ordered chicken biryani but received a cold portion.",
-      customerName: "John Doe",
-      customerContact: "+91 9876543210",
-      vendorName: "Spice Paradise",
-      priority: "high",
-      status: "open",
-      timestamp: "2024-01-15 10:30:00",
-      category: "Quality"
-    },
-    {
-      id: "TKT002",
-      subject: "Late delivery",
-      description: "Order was delivered 45 minutes late. I had to wait and it affected my lunch break schedule.",
-      customerName: "Sarah Smith",
-      customerContact: "+91 9876543211",
-      vendorName: "Fast Corner",
-      priority: "medium",
-      status: "in-progress",
-      timestamp: "2024-01-14 14:15:00",
-      category: "Delivery"
-    },
-    {
-      id: "TKT003",
-      subject: "Wrong order received",
-      description: "I ordered a vegetarian burger but received a chicken burger instead. This is against my dietary preferences.",
-      customerName: "Mike Johnson",
-      customerContact: "+91 9876543212",
-      vendorName: "Healthy Bites",
-      priority: "low",
-      status: "resolved",
-      timestamp: "2024-01-13 12:45:00",
-      category: "Order"
-    },
-    {
-      id: "TKT004",
-      subject: "Unhygienic food packaging",
-      description: "The food container was dirty and there were spots on the packaging. Food safety is a concern.",
-      customerName: "Emily Davis",
-      customerContact: "+91 9876543213",
-      vendorName: "Cafe Delight",
-      priority: "high",
-      status: "open",
-      timestamp: "2024-01-16 09:20:00",
-      category: "Hygiene"
-    },
-    {
-      id: "TKT005",
-      subject: "Overcharged amount",
-      description: "I was charged ₹250 for an item that costs ₹180 according to the menu. Please check the billing.",
-      customerName: "Robert Wilson",
-      customerContact: "+91 9876543214",
-      vendorName: "Snack Hub",
-      priority: "medium",
-      status: "in-progress",
-      timestamp: "2024-01-15 16:00:00",
-      category: "Billing"
-    }
-  ]);
+  // Mock ticket data has been removed. API integration is pending.
+  const tickets = [];
+  const filteredTickets = [];
+  
+  const counts = { total: 0, open: 0, inProgress: 0, resolved: 0 };
+  const outlets = ['All Vendors']; // This should also come from an API or be derived.
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -86,50 +30,8 @@ const TicketManagement = () => {
   };
 
   const updateTicketStatus = (ticketId: string, newStatus: string) => {
-    setTickets(tickets.map(ticket => 
-      ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket
-    ));
+    // This will be replaced with an API call
   };
-
-  const filteredTickets = tickets.filter(ticket => {
-    const matchesStatus = selectedStatus === 'all' || ticket.status === selectedStatus;
-    const matchesOutlet = selectedOutlet === 'All Vendors' || ticket.vendorName === selectedOutlet;
-    
-    let matchesDate = true;
-    if (selectedDate !== 'all') {
-      const ticketDate = new Date(ticket.timestamp);
-      const today = new Date();
-      
-      switch (selectedDate) {
-        case 'today':
-          matchesDate = ticketDate.toDateString() === today.toDateString();
-          break;
-        case 'week':
-          const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-          matchesDate = ticketDate >= weekAgo;
-          break;
-        case 'month':
-          const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-          matchesDate = ticketDate >= monthAgo;
-          break;
-      }
-    }
-    
-    return matchesStatus && matchesOutlet && matchesDate;
-  });
-
-  const getTicketCounts = () => {
-    return {
-      total: filteredTickets.length,
-      open: filteredTickets.filter(t => t.status === 'open').length,
-      inProgress: filteredTickets.filter(t => t.status === 'in-progress').length,
-      resolved: filteredTickets.filter(t => t.status === 'resolved').length
-    };
-  };
-
-  const counts = getTicketCounts();
-
-  const outlets = ['All Vendors', 'Spice Paradise', 'Fast Corner', 'Healthy Bites', 'Cafe Delight', 'Snack Hub', 'Green Bowl', 'Pizza Point', 'Tea Time'];
 
   return (
     <div className="space-y-6">
@@ -240,7 +142,7 @@ const TicketManagement = () => {
       {/* Tickets Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Tickets ({filteredTickets.length})</CardTitle>
+          <CardTitle>All Tickets (0)</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -257,54 +159,58 @@ const TicketManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredTickets.map((ticket) => (
-                  <motion.tr
-                    key={ticket.id}
-                    className="border-b hover:bg-gray-50"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    <td className="p-4 font-medium">{ticket.id}</td>
-                    <td className="p-4">
-                      <div>
-                        <p className="font-medium">{ticket.subject}</p>
-                        <p className="text-sm text-gray-600 truncate max-w-xs">{ticket.description}</p>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div>
-                        <p className="font-medium">{ticket.customerName}</p>
-                        <p className="text-sm text-gray-600">{ticket.customerContact}</p>
-                      </div>
-                    </td>
-                    <td className="p-4">{ticket.vendorName}</td>
-                    <td className="p-4">
-                      <Badge variant={getStatusColor(ticket.status)} className={ticket.status === 'resolved' ? 'bg-green-600' : ''}>
-                        {ticket.status.replace('-', ' ')}
-                      </Badge>
-                    </td>
-                    <td className="p-4">
-                      <div>
-                        <p className="text-sm">{new Date(ticket.timestamp).toLocaleDateString()}</p>
-                        <p className="text-xs text-gray-600">{new Date(ticket.timestamp).toLocaleTimeString()}</p>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedTicket(ticket);
-                          setShowTicketModal(true);
-                        }}
-                        title="View Details"
-                        className="hover:bg-blue-50"
+                {filteredTickets.length === 0 ? (
+                    <tr><td colSpan={7} className="text-center p-8">Loading tickets or no tickets found.</td></tr>
+                ) : (
+                    filteredTickets.map((ticket) => (
+                      <motion.tr
+                        key={ticket.id}
+                        className="border-b hover:bg-gray-50"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
                       >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                    </td>
-                  </motion.tr>
-                ))}
+                        <td className="p-4 font-medium">{ticket.id}</td>
+                        <td className="p-4">
+                          <div>
+                            <p className="font-medium">{ticket.subject}</p>
+                            <p className="text-sm text-gray-600 truncate max-w-xs">{ticket.description}</p>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div>
+                            <p className="font-medium">{ticket.customerName}</p>
+                            <p className="text-sm text-gray-600">{ticket.customerContact}</p>
+                          </div>
+                        </td>
+                        <td className="p-4">{ticket.vendorName}</td>
+                        <td className="p-4">
+                          <Badge variant={getStatusColor(ticket.status)} className={ticket.status === 'resolved' ? 'bg-green-600' : ''}>
+                            {ticket.status.replace('-', ' ')}
+                          </Badge>
+                        </td>
+                        <td className="p-4">
+                          <div>
+                            <p className="text-sm">{new Date(ticket.timestamp).toLocaleDateString()}</p>
+                            <p className="text-xs text-gray-600">{new Date(ticket.timestamp).toLocaleTimeString()}</p>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedTicket(ticket);
+                              setShowTicketModal(true);
+                            }}
+                            title="View Details"
+                            className="hover:bg-blue-50"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </td>
+                      </motion.tr>
+                    ))
+                )}
               </tbody>
             </table>
           </div>
