@@ -56,15 +56,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (credentials: any, userType: 'admin' | 'vendor') => {
     setIsLoading(true);
     const loginUrl = userType === 'admin' ? '/admin/auth/login' : '/vendor/auth/login';
-    
     try {
+      console.log('[LOGIN] Attempting login to', loginUrl, 'with', credentials);
       const response = await axiosInstance.post(loginUrl, credentials);
       const { jwtToken, requiresPasswordReset } = response.data;
+      console.log('[LOGIN] Got response', response.data);
       if (jwtToken) {
         localStorage.setItem('jwtToken', jwtToken);
         setToken(jwtToken);
-        
+
         if (requiresPasswordReset) {
+          console.log('[LOGIN] Navigation to /reset-password due to requiresPasswordReset');
           navigate('/reset-password', { state: { flow: 'first-time', userType } });
           toast({
               title: "Setup Your Account",
@@ -73,15 +75,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           await fetchUserProfile();
           const dashboardUrl = userType === 'admin' ? '/admin-dashboard' : '/vendor-dashboard';
+          console.log('[LOGIN] Navigation to main dashboard', dashboardUrl);
           navigate(dashboardUrl);
           toast({
               title: "Login Successful",
               description: "Welcome back!",
           });
         }
+      } else {
+        console.log('[LOGIN] No jwtToken returned!');
       }
     } catch (error: any) {
-        console.error("Login failed", error);
+        console.error("[LOGIN] Login failed", error);
         const errorMessage = error.response?.data?.message || 'Invalid username or password.';
         toast({
             title: "Login Failed",

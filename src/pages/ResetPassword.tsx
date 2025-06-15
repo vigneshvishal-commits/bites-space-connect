@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -12,6 +11,8 @@ import axiosInstance from '@/api/axiosInstance';
 import { useAuth } from '@/hooks/useAuth';
 
 const ResetPassword = () => {
+  console.log('[RESET PASSWORD] Component mounted/location.state:', window.location.state);
+
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -150,4 +151,3 @@ const ResetPassword = () => {
 };
 
 export default ResetPassword;
-
