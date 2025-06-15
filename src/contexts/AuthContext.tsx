@@ -4,12 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '@/api/axiosInstance';
 import { useToast } from "@/components/ui/use-toast";
 
-// Define the User type based on expected profile data
+// Define the User type based on your backend response
 interface User {
   username: string;
-  name: string;
-  role: string;
-  lastLogin?: string;
+  isInitialPassword: boolean;
 }
 
 interface AuthContextType {
@@ -18,6 +16,7 @@ interface AuthContextType {
   user: User | null;
   login: (credentials: any, userType: 'admin' | 'vendor') => Promise<void>;
   logout: () => void;
+  changePassword: (oldPassword: string, newPassword: string) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -30,34 +29,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const fetchUserProfile = async () => {
-    console.log("[AUTH] fetchUserProfile start");
-    const storedToken = localStorage.getItem('jwtToken');
-    if (!storedToken) {
-      console.log("[AUTH] No JWT token in localStorage.");
-      return;
-    }
-    try {
-      const { data } = await axiosInstance.get<User>('/admin/auth/me');
-      setUser(data);
-      console.log("[AUTH] User profile fetched:", data);
-    } catch (error) {
-      console.error("[AUTH] Failed to fetch user profile:", error);
-      // Clear invalid token
-      localStorage.removeItem('jwtToken');
-      setToken(null);
-      setUser(null);
-    }
-  };
-
   useEffect(() => {
     console.log('[AUTH] AuthProvider useEffect running');
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem('jwtToken');
-      console.log('[AUTH] initializeAuth found token?', !!storedToken);
+      console.log('[AUTH] Found stored token:', !!storedToken);
       if (storedToken) {
         setToken(storedToken);
-        await fetchUserProfile();
+        // Note: Your backend doesn't seem to have a "me" endpoint, 
+        // so we'll rely on the login response to set user data
       }
       setIsLoading(false);
     };
@@ -71,11 +51,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const loginUrl = userType === 'admin' ? '/admin/auth/login' : '/vendor/auth/login';
     
     try {
-      console.log('[LOGIN] Attempting login to', loginUrl, 'with credentials:', { username: credentials.username });
-      const response = await axiosInstance.post(loginUrl, credentials);
+      console.log('[LOGIN] Attempting login to', loginUrl);
+      const response = await axiosInstance.post(loginUrl, {
+        username: credentials.username,
+        password: credentials.password
+      });
+      
       console.log('[LOGIN] Login response received:', response.data);
       
-      const { jwtToken, requiresPasswordReset } = response.data;
+      const { jwtToken, username, isInitialPassword } = response.data;
       
       if (!jwtToken) {
         console.error('[LOGIN] No jwtToken in response');
@@ -85,10 +69,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Store token and update state
       localStorage.setItem('jwtToken', jwtToken);
       setToken(jwtToken);
-      console.log('[LOGIN] Token stored successfully');
+      setUser({ username, isInitialPassword });
+      console.log('[LOGIN] Token stored successfully, user set:', { username, isInitialPassword });
 
-      if (requiresPasswordReset) {
-        console.log('[LOGIN] Password reset required, navigating to reset page');
+      if (isInitialPassword) {
+        console.log('[LOGIN] Initial password detected, navigating to change password');
         navigate('/reset-password', { 
           state: { 
             flow: 'first-time', 
@@ -98,13 +83,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
         toast({
           title: "Setup Your Account",
-          description: "Please set your new password to continue.",
+          description: "Please change your initial password to continue.",
         });
       } else {
-        // Fetch user profile first
-        console.log('[LOGIN] Fetching user profile after successful login');
-        await fetchUserProfile();
-        
         // Navigate to appropriate dashboard
         const dashboardUrl = userType === 'admin' ? '/admin-dashboard' : '/vendor-dashboard';
         console.log('[LOGIN] Navigating to dashboard:', dashboardUrl);
@@ -112,7 +93,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         toast({
           title: "Login Successful",
-          description: "Welcome back!",
+          description: `Welcome back, ${username}!`,
         });
       }
     } catch (error: any) {
@@ -134,6 +115,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const changePassword = async (oldPassword: string, newPassword: string) => {
+    console.log('[CHANGE PASSWORD] Starting password change');
+    try {
+      const response = await axiosInstance.post('/admin/auth/change-password', {
+        oldPassword,
+        newPassword
+      });
+      
+      console.log('[CHANGE PASSWORD] Password change response:', response.data);
+      
+      const { jwtToken, username, isInitialPassword } = response.data;
+      
+      // Update token and user state
+      localStorage.setItem('jwtToken', jwtToken);
+      setToken(jwtToken);
+      setUser({ username, isInitialPassword });
+      
+      toast({
+        title: "Password Changed",
+        description: "Your password has been successfully updated.",
+      });
+      
+      // Navigate to dashboard after successful password change
+      navigate('/admin-dashboard');
+      
+    } catch (error: any) {
+      console.error("[CHANGE PASSWORD] Password change failed:", error);
+      const errorMessage = error.response?.data?.message || 'Failed to change password.';
+      toast({
+        title: "Password Change Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   const logout = () => {
     console.log('[AUTH] Logging out user');
     localStorage.removeItem('jwtToken');
@@ -152,6 +170,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     login,
     logout,
+    changePassword,
     isLoading,
   };
 
@@ -159,7 +178,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loading: isLoading,
     hasToken: !!token,
     hasUser: !!user,
-    isAuthenticated: !!token
+    isAuthenticated: !!token,
+    username: user?.username
   });
 
   return (

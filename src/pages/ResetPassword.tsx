@@ -2,36 +2,34 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Lock, Key, Eye, EyeOff } from 'lucide-react';
+import { Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import axiosInstance from '@/api/axiosInstance';
 import { useAuth } from '@/hooks/useAuth';
 
 const ResetPassword = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { logout } = useAuth();
+  const { changePassword, logout } = useAuth();
 
   console.log('[RESET PASSWORD] Component mounted with location.state:', location.state);
 
   // Get state with proper defaults
   const locationState = location.state as any;
-  const flow = locationState?.flow || 'forgot';
-  const email = locationState?.email || '';
+  const flow = locationState?.flow || 'first-time';
   const userType = locationState?.userType || 'admin';
   const fromLogin = locationState?.fromLogin || false;
 
-  console.log('[RESET PASSWORD] Parsed state:', { flow, email, userType, fromLogin });
+  console.log('[RESET PASSWORD] Parsed state:', { flow, userType, fromLogin });
 
-  const [password, setPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [code, setCode] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswords, setShowPasswords] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Redirect if accessing without proper context
@@ -42,15 +40,15 @@ const ResetPassword = () => {
     }
   }, [locationState, fromLogin, navigate]);
 
-  const handleResetPassword = async (e: React.FormEvent) => {
+  const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('[RESET PASSWORD] Form submitted with flow:', flow);
 
-    if (password !== confirmPassword) {
+    if (newPassword !== confirmPassword) {
       toast({ title: "Error", description: "Passwords do not match.", variant: "destructive" });
       return;
     }
-    if (password.length < 6) {
+    if (newPassword.length < 6) {
       toast({ title: "Error", description: "Password must be at least 6 characters long.", variant: "destructive" });
       return;
     }
@@ -59,48 +57,27 @@ const ResetPassword = () => {
 
     try {
       if (flow === 'first-time') {
-        const endpoint = userType === 'admin' ? '/admin/auth/reset-password-on-login' : '/vendor/auth/reset-password-on-login';
-        console.log('[RESET PASSWORD] First time reset, calling:', endpoint);
-        
-        await axiosInstance.post(endpoint, { newPassword: password });
-
+        console.log('[RESET PASSWORD] First time password change');
+        await changePassword(currentPassword, newPassword);
+      } else {
+        // Handle other flows if needed (forgot password, etc.)
         toast({
-          title: "Password Set Successfully",
-          description: "Please log in with your new password.",
+          title: "Error",
+          description: "This flow is not yet implemented.",
+          variant: "destructive",
         });
-        
-        // Log out to clear the temporary token and force re-login
-        logout();
-        
-      } else { // 'forgot' flow
-        if (!code) {
-          toast({ title: "Error", description: "Reset code is required.", variant: "destructive" });
-          setIsLoading(false);
-          return;
-        }
-        
-        const endpoint = userType === 'admin' ? '/admin/auth/reset-password' : '/vendor/auth/reset-password';
-        console.log('[RESET PASSWORD] Forgot password reset, calling:', endpoint);
-        
-        await axiosInstance.post(endpoint, { email, code, newPassword: password });
-        
-        toast({
-          title: "Password Reset Successful",
-          description: "You can now log in with your new password.",
-        });
-        navigate('/login');
       }
     } catch (error: any) {
       console.error('[RESET PASSWORD] Error:', error);
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "An unexpected error occurred.",
-        variant: "destructive",
-      });
+      // Error is already handled in changePassword function
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (!locationState && !fromLogin) {
+    return null; // Will redirect in useEffect
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
@@ -122,54 +99,53 @@ const ResetPassword = () => {
         <Card className="shadow-xl border-0">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-2xl font-bold text-gray-800">
-              Reset Your Password
+              Change Your Password
             </CardTitle>
             <p className="text-gray-600 text-sm">
               {flow === 'first-time' 
-                ? 'Create a new password to secure your account.'
-                : 'Enter the code from your email and a new password.'
+                ? 'Please change your initial password to secure your account.'
+                : 'Enter your current password and choose a new one.'
               }
             </p>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleResetPassword} className="space-y-6">
-              {flow === 'forgot' && (
-                <div>
-                  <Label htmlFor="code">Reset Code</Label>
-                  <div className="relative mt-2">
-                    <Key className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                    <Input 
-                      id="code" 
-                      value={code} 
-                      onChange={(e) => setCode(e.target.value)} 
-                      className="pl-10 h-12" 
-                      placeholder="Enter code" 
-                      required 
-                    />
-                  </div>
-                </div>
-              )}
-              
+            <form onSubmit={handlePasswordChange} className="space-y-6">
               <div>
-                <Label htmlFor="password">New Password</Label>
+                <Label htmlFor="currentPassword">Current Password</Label>
                 <div className="relative mt-2">
                   <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <Input 
-                    id="password" 
-                    type={showPassword ? 'text' : 'password'} 
-                    value={password} 
-                    onChange={(e) => setPassword(e.target.value)} 
+                    id="currentPassword" 
+                    type={showPasswords ? 'text' : 'password'} 
+                    value={currentPassword} 
+                    onChange={(e) => setCurrentPassword(e.target.value)} 
                     className="pl-10 pr-10 h-12" 
-                    placeholder="Enter new password" 
+                    placeholder="Enter current password" 
                     required 
                   />
                   <button 
                     type="button" 
-                    onClick={() => setShowPassword(!showPassword)} 
+                    onClick={() => setShowPasswords(!showPasswords)} 
                     className="absolute right-3 top-3 text-gray-400"
                   >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    {showPasswords ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="newPassword">New Password</Label>
+                <div className="relative mt-2">
+                  <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                  <Input 
+                    id="newPassword" 
+                    type={showPasswords ? 'text' : 'password'} 
+                    value={newPassword} 
+                    onChange={(e) => setNewPassword(e.target.value)} 
+                    className="pl-10 h-12" 
+                    placeholder="Enter new password" 
+                    required 
+                  />
                 </div>
               </div>
               
@@ -179,10 +155,10 @@ const ResetPassword = () => {
                   <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <Input 
                     id="confirmPassword" 
-                    type={showPassword ? 'text' : 'password'} 
+                    type={showPasswords ? 'text' : 'password'} 
                     value={confirmPassword} 
                     onChange={(e) => setConfirmPassword(e.target.value)} 
-                    className="pl-10 pr-10 h-12" 
+                    className="pl-10 h-12" 
                     placeholder="Confirm new password" 
                     required 
                   />
@@ -194,13 +170,16 @@ const ResetPassword = () => {
                 className="w-full h-12 bg-blue-600 hover:bg-blue-700" 
                 disabled={isLoading}
               >
-                {isLoading ? 'Resetting...' : 'Reset Password'}
+                {isLoading ? 'Changing Password...' : 'Change Password'}
               </Button>
               
               <div className="text-center">
                 <button 
                   type="button" 
-                  onClick={() => navigate('/login')} 
+                  onClick={() => {
+                    logout();
+                    navigate('/login');
+                  }} 
                   className="text-sm font-medium text-blue-600 hover:underline"
                 >
                   Back to Login
