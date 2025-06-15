@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import DashboardOverview from '@/components/admin/DashboardOverview';
-import VendorManagement from '@/components/admin/VendorManagement';
+import VendorManagement from '@/components/admin/vendormanagement';
 import TicketManagement from '@/components/admin/TicketManagement';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
