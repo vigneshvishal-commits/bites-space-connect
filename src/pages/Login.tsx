@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import axiosInstance from "@/api/axiosInstance";
+import { useMutation } from "@tanstack/react-query";
 
 const Login = () => {
   const [isAdmin, setIsAdmin] = useState(true);
@@ -55,90 +57,137 @@ const Login = () => {
     return isValid;
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateCredentials()) {
-      return;
+  // ---- API Integration ----
+  const loginMutation = useMutation({
+    mutationFn: async (payload: { username: string; password: string; isAdmin: boolean }) => {
+      const url = payload.isAdmin
+        ? "/admin/auth/login"
+        : "/vendor/auth/login";
+      const res = await axiosInstance.post(url, {
+        username: payload.username,
+        password: payload.password
+      });
+      return res.data;
     }
+  });
 
-    setIsLoading(true);
+  const changePasswordMutation = useMutation({
+    mutationFn: async ({ username, request, isAdmin }: { username: string, request: any, isAdmin: boolean }) => {
+      const url = isAdmin
+        ? "/admin/auth/change-password"
+        : "/vendor/auth/change-password";
+      return await axiosInstance.post(url, request);
+    }
+  });
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
+  const forgotPasswordMutation = useMutation({
+    mutationFn: async ({ email, isAdmin }: { email: string, isAdmin: boolean }) => {
+      const url = isAdmin
+        ? "/admin/auth/forgot-password"
+        : "/vendor/auth/forgot-password";
+      return await axiosInstance.post(url, { email });
+    }
+  });
 
-    // Accept any non-empty credentials for both admin and vendor
-    const isValidCredentials = credentials.username.trim() && credentials.password.trim();
-
-    if (isValidCredentials) {
-      const hasChanged = hasPasswordBeenChanged(credentials.username, isAdmin);
-      
-      if (!hasChanged) {
-        // First time login - ask if they want to change password
-        setCurrentFlow('first-time-check');
-        setIsLoading(false);
-        return;
-      } else {
-        // Subsequent login - proceed directly to dashboard
-        setSuccessType('login');
-        setLoginSuccess(true);
-        setTimeout(() => {
-          if (isAdmin) {
-            window.location.href = '/admin-dashboard';
-          } else {
-            window.location.href = '/vendor-dashboard';
-          }
-        }, 1500);
-      }
-    } else {
-      setValidationErrors({
-        username: 'Invalid credentials',
-        password: 'Invalid credentials',
-        email: ''
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({ email, token, newPassword, isAdmin }: { email: string, token: string, newPassword: string, isAdmin: boolean }) => {
+      const url = isAdmin
+        ? "/admin/auth/reset-password"
+        : "/vendor/auth/reset-password";
+      return await axiosInstance.post(url, {
+        email, token, newPassword
       });
     }
-    
+  });
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateCredentials()) return;
+    setIsLoading(true);
+
+    try {
+      await loginMutation.mutateAsync({
+        username: credentials.username,
+        password: credentials.password,
+        isAdmin
+      });
+      // Assume successful login if there's no error
+      setSuccessType('login');
+      setLoginSuccess(true);
+      setTimeout(() => {
+        window.location.href = isAdmin
+          ? "/admin-dashboard"
+          : "/vendor-dashboard";
+      }, 1500);
+    } catch (error: any) {
+      setValidationErrors({
+        username: "Invalid credentials",
+        password: "Invalid credentials",
+        email: ""
+      });
+    }
     setIsLoading(false);
   };
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPassword === confirmPassword && newPassword.length >= 6) {
-      setIsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mark password as changed
-      const key = getPasswordChangeKey(credentials.username, isAdmin);
-      localStorage.setItem(key, 'true');
-      
+    if (newPassword !== confirmPassword || newPassword.length < 6) return;
+
+    setIsLoading(true);
+    try {
+      // For demo simplicity, just resetting password with verification code for both flows.
+      if (currentFlow === "password-reset" && successType === "password-reset") {
+        // This is for "forgot password + code" flow
+        await resetPasswordMutation.mutateAsync({
+          email,
+          token: verificationCode, // Use the code from input
+          newPassword,
+          isAdmin
+        });
+      } else {
+        // This is for first time password change (admin change or vendor change)
+        await changePasswordMutation.mutateAsync({
+          username: credentials.username,
+          request: { oldPassword: credentials.password, newPassword },
+          isAdmin
+        });
+      }
       setSuccessType('password-change');
       setLoginSuccess(true);
       setTimeout(() => {
-        if (isAdmin) {
-          window.location.href = '/admin-dashboard';
-        } else {
-          window.location.href = '/vendor-dashboard';
-        }
+        window.location.href = isAdmin
+          ? "/admin-dashboard"
+          : "/vendor-dashboard";
       }, 1500);
+    } catch (err) {
+      setValidationErrors({
+        ...validationErrors,
+        password: "Failed to reset password. Please try again.",
+        username: ""
+      });
     }
+    setIsLoading(false);
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setCurrentFlow('verify-email');
+    try {
+      await forgotPasswordMutation.mutateAsync({ email, isAdmin });
+      setCurrentFlow('verify-email');
+    } catch (err) {
+      setValidationErrors({
+        ...validationErrors,
+        email: "Failed to send reset email. Try again."
+      });
+    }
     setIsLoading(false);
   };
 
   const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (verificationCode === '123456') {
-      setCurrentFlow('password-reset');
-      setSuccessType('password-reset');
-    } else {
-      setValidationErrors({...validationErrors, email: 'Invalid verification code'});
-    }
+    setCurrentFlow('password-reset');
+    setSuccessType('password-reset');
   };
 
   const handleSkipPasswordChange = () => {
