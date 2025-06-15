@@ -59,19 +59,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     try {
       const response = await axiosInstance.post(loginUrl, credentials);
-      const { jwtToken } = response.data;
+      const { jwtToken, requiresPasswordReset } = response.data;
       if (jwtToken) {
         localStorage.setItem('jwtToken', jwtToken);
         setToken(jwtToken);
-        await fetchUserProfile();
         
-        const dashboardUrl = userType === 'admin' ? '/admin-dashboard' : '/vendor-dashboard';
-        navigate(dashboardUrl);
-
-        toast({
-            title: "Login Successful",
-            description: "Welcome back!",
-        });
+        if (requiresPasswordReset) {
+          navigate('/reset-password', { state: { flow: 'first-time', userType } });
+          toast({
+              title: "Setup Your Account",
+              description: "Please set your new password to continue.",
+          });
+        } else {
+          await fetchUserProfile();
+          const dashboardUrl = userType === 'admin' ? '/admin-dashboard' : '/vendor-dashboard';
+          navigate(dashboardUrl);
+          toast({
+              title: "Login Successful",
+              description: "Welcome back!",
+          });
+        }
       }
     } catch (error: any) {
         console.error("Login failed", error);

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
 import axiosInstance from '@/api/axiosInstance';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [isAdmin, setIsAdmin] = useState(true);
@@ -22,6 +23,7 @@ const Login = () => {
   const { login, isLoading } = useAuth();
   const { toast } = useToast();
   const [isForgotPasswordLoading, setIsForgotPasswordLoading] = useState(false);
+  const navigate = useNavigate();
 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,6 +50,7 @@ const Login = () => {
               title: "Request Sent",
               description: "If an account with that email exists, a password reset code has been sent.",
           });
+          navigate('/reset-password', { state: { flow: 'forgot', email: email, userType: isAdmin ? 'admin' : 'vendor' }});
           setFlow('login');
           setEmail('');
       } catch (error: any) {
