@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -12,13 +13,28 @@ import { useAuth } from '@/hooks/useAuth';
 
 const ResetPassword = () => {
   const location = useLocation();
-  console.log('[RESET PASSWORD] Component mounted/location.state:', location.state);
-
   const navigate = useNavigate();
   const { toast } = useToast();
   const { logout } = useAuth();
-  
-  const { flow, email, userType } = location.state || { flow: 'first-time', email: '', userType: 'admin' };
+
+  console.log('[RESET PASSWORD] Render location.state:', location.state);
+  // Fallbacks and guards for location.state
+  const flow = location.state?.flow ?? 'first-time';
+  const email = location.state?.email ?? '';
+  const userType = location.state?.userType ?? 'admin';
+
+  // Show a fallback UI if user visits page without proper state
+  if (!location.state && flow !== 'first-time') {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="bg-white shadow p-8 rounded space-y-4 text-center">
+          <h1 className="text-xl font-bold">Invalid Link</h1>
+          <p>This page was accessed incorrectly. Please return to the login page.</p>
+          <Button onClick={() => navigate('/login')}>Back to Login</Button>
+        </div>
+      </div>
+    );
+  }
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -42,6 +58,7 @@ const ResetPassword = () => {
     try {
       if (flow === 'first-time') {
         const endpoint = userType === 'admin' ? '/admin/auth/reset-password-on-login' : '/vendor/auth/reset-password-on-login';
+        console.log('[RESET] First time password reset POST', endpoint, { newPassword: password });
         await axiosInstance.post(endpoint, { newPassword: password });
 
         toast({
@@ -59,6 +76,7 @@ const ResetPassword = () => {
           return;
         }
         const endpoint = userType === 'admin' ? '/admin/auth/reset-password' : '/vendor/auth/reset-password';
+        console.log('[RESET] Forgot password flow POST', endpoint, { email, code, newPassword: password });
         await axiosInstance.post(endpoint, { email, code, newPassword: password });
         
         toast({
@@ -151,3 +169,4 @@ const ResetPassword = () => {
 };
 
 export default ResetPassword;
+

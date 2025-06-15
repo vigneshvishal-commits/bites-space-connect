@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
@@ -37,6 +36,7 @@ const Login = () => {
         toast({ title: "Error", description: "Username and password are required.", variant: "destructive" });
         return;
     }
+    console.log('[LOGIN PAGE] Submitting login', credentials, isAdmin ? 'admin' : 'vendor');
     await login(credentials, isAdmin ? 'admin' : 'vendor');
   };
 
@@ -45,6 +45,7 @@ const Login = () => {
       setIsForgotPasswordLoading(true);
       try {
           const endpoint = isAdmin ? '/admin/auth/forgot-password' : '/vendor/auth/forgot-password';
+          console.log('[LOGIN PAGE] Forgot password flow; endpoint=', endpoint, 'email=', email);
           await axiosInstance.post(endpoint, { email });
           toast({
               title: "Request Sent",

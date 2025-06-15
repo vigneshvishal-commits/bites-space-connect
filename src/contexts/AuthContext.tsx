@@ -31,10 +31,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   const fetchUserProfile = async () => {
-    if (!localStorage.getItem('jwtToken')) return;
+    console.log("[AUTH] fetchUserProfile start");
+    if (!localStorage.getItem('jwtToken')) {
+      console.log("[AUTH] No JWT token in localStorage.");
+      return;
+    }
     try {
       const { data } = await axiosInstance.get<User>('/admin/auth/me');
       setUser(data);
+      console.log("[AUTH] User profile fetched:", data);
     } catch (error) {
       console.error("Failed to fetch user profile:", error);
       setUser(null);
@@ -42,8 +47,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    console.log('[AUTH] AuthProvider useEffect running');
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem('jwtToken');
+      console.log('[AUTH] initializeAuth found token?', !!storedToken);
       if (storedToken) {
         setToken(storedToken);
         await fetchUserProfile();
@@ -66,7 +73,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setToken(jwtToken);
 
         if (requiresPasswordReset) {
-          console.log('[LOGIN] Navigation to /reset-password due to requiresPasswordReset');
+          // First-time setup, must reset password
+          console.log('[LOGIN] requiresPasswordReset TRUE: navigating to /reset-password', { userType });
           navigate('/reset-password', { state: { flow: 'first-time', userType } });
           toast({
               title: "Setup Your Account",
@@ -84,6 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       } else {
         console.log('[LOGIN] No jwtToken returned!');
+        toast({ title: "Error", description: "No token received.", variant: "destructive" });
       }
     } catch (error: any) {
         console.error("[LOGIN] Login failed", error);
@@ -102,6 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('jwtToken');
     setToken(null);
     setUser(null);
+    console.log('[AUTH] User logged out, navigating to /login');
     navigate('/login');
     toast({
         title: "Logged Out",
@@ -118,9 +128,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isLoading,
   };
 
+  console.log('[AUTH] AuthProvider render: loading:', isLoading, 'token:', token, 'user:', user);
+
   return (
     <AuthContext.Provider value={value}>
-      {!isLoading && children}
+      {!isLoading ? children : <div className="flex items-center justify-center min-h-screen">Loading Auth...</div>}
     </AuthContext.Provider>
   );
 };
+
