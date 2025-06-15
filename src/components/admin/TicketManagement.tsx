@@ -1,26 +1,95 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import axiosInstance from '@/api/axiosInstance';
 import { Eye, Flag, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-// TODO: Fetch data from /api/admin/tickets
+import { useToast } from "@/components/ui/use-toast";
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Type definitions
+interface Ticket {
+  id: string;
+  subject: string;
+  description: string;
+  customerName: string;
+  customerContact: string;
+  vendorName: string;
+  status: 'open' | 'in-progress' | 'resolved';
+  timestamp: string;
+  category: string;
+}
+
+interface TicketCounts {
+  total: number;
+  open: number;
+  inProgress: number;
+  resolved: number;
+}
+
+// API functions
+const fetchTicketCounts = async (): Promise<TicketCounts> => {
+  const { data } = await axiosInstance.get('/admin/tickets/counts');
+  return data;
+};
+
+const fetchTickets = async (filters: { status: string; date: string; vendor: string }): Promise<Ticket[]> => {
+  const { data } = await axiosInstance.get('/admin/tickets', { params: filters });
+  return data;
+};
+
+const updateTicketStatus = async ({ ticketId, newStatus }: { ticketId: string; newStatus: string }): Promise<Ticket> => {
+  const { data } = await axiosInstance.put(`/admin/tickets/${ticketId}/status?newStatus=${newStatus}`);
+  return data;
+};
 
 const TicketManagement = () => {
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  const [selectedOutlet, setSelectedOutlet] = useState('All Vendors');
-  const [selectedDate, setSelectedDate] = useState('all');
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [filters, setFilters] = useState({ status: 'all', date: 'all', vendor: 'All Vendors' });
   const [showTicketModal, setShowTicketModal] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
 
-  // Mock ticket data has been removed. API integration is pending.
-  const tickets = [];
-  const filteredTickets = [];
-  
-  const counts = { total: 0, open: 0, inProgress: 0, resolved: 0 };
-  const outlets = ['All Vendors']; // This should also come from an API or be derived.
+  const { data: counts, isLoading: isLoadingCounts } = useQuery<TicketCounts>({
+    queryKey: ['ticketCounts'],
+    queryFn: fetchTicketCounts,
+    initialData: { total: 0, open: 0, inProgress: 0, resolved: 0 },
+  });
 
-  const getStatusColor = (status: string) => {
+  const { data: tickets = [], isLoading: isLoadingTickets, isError: isErrorTickets } = useQuery<Ticket[]>({
+    queryKey: ['tickets', filters],
+    queryFn: () => fetchTickets(filters),
+  });
+
+  const { data: vendorsData } = useQuery<any[]>({
+      queryKey: ['vendorsListForTickets'],
+      queryFn: async () => {
+          const {data} = await axiosInstance.get('/admin/vendors');
+          return data;
+      },
+      initialData: []
+  });
+
+  const mutation = useMutation({
+    mutationFn: updateTicketStatus,
+    onSuccess: (updatedTicket) => {
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['ticketCounts'] });
+      setSelectedTicket(updatedTicket);
+      toast({ title: "Success", description: "Ticket status updated." });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update ticket status.", variant: "destructive" });
+    },
+  });
+
+  const handleFilterChange = (filterName: string, value: string) => {
+    setFilters(prev => ({ ...prev, [filterName]: value }));
+  };
+
+  const getStatusColor = (status: string): 'destructive' | 'default' | 'secondary' => {
     switch (status) {
       case 'open': return 'destructive';
       case 'in-progress': return 'default';
@@ -29,9 +98,7 @@ const TicketManagement = () => {
     }
   };
 
-  const updateTicketStatus = (ticketId: string, newStatus: string) => {
-    // This will be replaced with an API call
-  };
+  const outlets = useMemo(() => ['All Vendors', ...(vendorsData?.map(v => v.outletName) || [])], [vendorsData]);
 
   return (
     <div className="space-y-6">
@@ -43,71 +110,75 @@ const TicketManagement = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Total Tickets</p>
-                  <p className="text-2xl font-bold text-gray-800">{counts.total}</p>
-                </div>
-                <AlertTriangle className="w-8 h-8 text-gray-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+        {isLoadingCounts ? Array.from({length: 4}).map((_, i) => <Skeleton key={i} className="h-24" />) : (
+            <>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                <Card className="hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm text-gray-600">Total Tickets</p>
+                        <p className="text-2xl font-bold text-gray-800">{counts.total}</p>
+                    </div>
+                    <AlertTriangle className="w-8 h-8 text-gray-600" />
+                    </div>
+                </CardContent>
+                </Card>
+            </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Card className="hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Open Tickets</p>
-                  <p className="text-2xl font-bold text-red-600">{counts.open}</p>
-                </div>
-                <Flag className="w-8 h-8 text-red-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                <Card className="hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm text-gray-600">Open Tickets</p>
+                        <p className="text-2xl font-bold text-red-600">{counts.open}</p>
+                    </div>
+                    <Flag className="w-8 h-8 text-red-600" />
+                    </div>
+                </CardContent>
+                </Card>
+            </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card className="hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">In Progress</p>
-                  <p className="text-2xl font-bold text-yellow-600">{counts.inProgress}</p>
-                </div>
-                <Clock className="w-8 h-8 text-yellow-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                <Card className="hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm text-gray-600">In Progress</p>
+                        <p className="text-2xl font-bold text-yellow-600">{counts.inProgress}</p>
+                    </div>
+                    <Clock className="w-8 h-8 text-yellow-600" />
+                    </div>
+                </CardContent>
+                </Card>
+            </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-          <Card className="hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Resolved</p>
-                  <p className="text-2xl font-bold text-green-600">{counts.resolved}</p>
-                </div>
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+                <Card className="hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm text-gray-600">Resolved</p>
+                        <p className="text-2xl font-bold text-green-600">{counts.resolved}</p>
+                    </div>
+                    <CheckCircle className="w-8 h-8 text-green-600" />
+                    </div>
+                </CardContent>
+                </Card>
+            </motion.div>
+            </>
+        )}
       </div>
 
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <select 
+            <select
               className="p-2 border rounded-md"
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
+              value={filters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
             >
               <option value="all">All Status</option>
               <option value="open">Open</option>
@@ -115,10 +186,10 @@ const TicketManagement = () => {
               <option value="resolved">Resolved</option>
             </select>
             
-            <select 
+            <select
               className="p-2 border rounded-md"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
+              value={filters.date}
+              onChange={(e) => handleFilterChange('date', e.target.value)}
             >
               <option value="all">All Time</option>
               <option value="today">Today</option>
@@ -126,10 +197,10 @@ const TicketManagement = () => {
               <option value="month">This Month</option>
             </select>
             
-            <select 
+            <select
               className="p-2 border rounded-md"
-              value={selectedOutlet}
-              onChange={(e) => setSelectedOutlet(e.target.value)}
+              value={filters.vendor}
+              onChange={(e) => handleFilterChange('vendor', e.target.value)}
             >
               {outlets.map(outlet => (
                 <option key={outlet} value={outlet}>{outlet}</option>
@@ -142,7 +213,7 @@ const TicketManagement = () => {
       {/* Tickets Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Tickets (0)</CardTitle>
+          <CardTitle>All Tickets ({isLoadingTickets ? '...' : tickets.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -159,17 +230,21 @@ const TicketManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredTickets.length === 0 ? (
-                    <tr><td colSpan={7} className="text-center p-8">Loading tickets or no tickets found.</td></tr>
+                {isLoadingTickets ? (
+                    Array.from({length: 5}).map((_, i) => <tr key={i}><td colSpan={7}><Skeleton className="h-16 my-2 w-full" /></td></tr>)
+                ) : isErrorTickets ? (
+                    <tr><td colSpan={7} className="text-center p-8 text-red-500">Failed to load tickets.</td></tr>
+                ) : tickets.length === 0 ? (
+                    <tr><td colSpan={7} className="text-center p-8">No tickets found for the selected filters.</td></tr>
                 ) : (
-                    filteredTickets.map((ticket) => (
+                    tickets.map((ticket) => (
                       <motion.tr
                         key={ticket.id}
                         className="border-b hover:bg-gray-50"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                       >
-                        <td className="p-4 font-medium">{ticket.id}</td>
+                        <td className="p-4 font-medium">{ticket.id.substring(0,8)}...</td>
                         <td className="p-4">
                           <div>
                             <p className="font-medium">{ticket.subject}</p>
@@ -272,36 +347,17 @@ const TicketManagement = () => {
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-800 mb-3">Update Status</h3>
                 <div className="flex space-x-3">
-                  <Button
-                    variant={selectedTicket.status === 'open' ? 'default' : 'outline'}
-                    onClick={() => {
-                      updateTicketStatus(selectedTicket.id, 'open');
-                      setSelectedTicket({...selectedTicket, status: 'open'});
-                    }}
-                    className="flex-1"
-                  >
-                    Open
-                  </Button>
-                  <Button
-                    variant={selectedTicket.status === 'in-progress' ? 'default' : 'outline'}
-                    onClick={() => {
-                      updateTicketStatus(selectedTicket.id, 'in-progress');
-                      setSelectedTicket({...selectedTicket, status: 'in-progress'});
-                    }}
-                    className="flex-1"
-                  >
-                    In Progress
-                  </Button>
-                  <Button
-                    variant={selectedTicket.status === 'resolved' ? 'default' : 'outline'}
-                    onClick={() => {
-                      updateTicketStatus(selectedTicket.id, 'resolved');
-                      setSelectedTicket({...selectedTicket, status: 'resolved'});
-                    }}
-                    className="flex-1"
-                  >
-                    Resolved
-                  </Button>
+                  {(['open', 'in-progress', 'resolved'] as const).map((status) => (
+                      <Button
+                        key={status}
+                        variant={selectedTicket.status === status ? 'default' : 'outline'}
+                        onClick={() => mutation.mutate({ ticketId: selectedTicket.id, newStatus: status })}
+                        disabled={mutation.isPending}
+                        className="flex-1"
+                      >
+                        {status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ')}
+                      </Button>
+                  ))}
                 </div>
               </div>
               
