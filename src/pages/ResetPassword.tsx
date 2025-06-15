@@ -11,10 +11,10 @@ import axiosInstance from '@/api/axiosInstance';
 import { useAuth } from '@/hooks/useAuth';
 
 const ResetPassword = () => {
-  console.log('[RESET PASSWORD] Component mounted/location.state:', window.location.state);
+  const location = useLocation();
+  console.log('[RESET PASSWORD] Component mounted/location.state:', location.state);
 
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
   const { logout } = useAuth();
   
