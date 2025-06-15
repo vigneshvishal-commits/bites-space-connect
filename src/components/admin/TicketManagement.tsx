@@ -4,78 +4,74 @@ import { Eye, Flag, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import axiosInstance from '@/api/axiosInstance';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/components/ui/use-toast';
+
+interface Ticket {
+  id: string;
+  subject: string;
+  description: string;
+  customerName: string;
+  customerContact: string;
+  vendorName: string;
+  priority: 'high' | 'medium' | 'low';
+  status: 'open' | 'in-progress' | 'resolved';
+  timestamp: string;
+  category: string;
+}
+
+interface TicketCountsResponse {
+    total: number;
+    open: number;
+    inProgress: number;
+    resolved: number;
+}
 
 const TicketManagement = () => {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedOutlet, setSelectedOutlet] = useState('All Vendors');
   const [selectedDate, setSelectedDate] = useState('all');
   const [showTicketModal, setShowTicketModal] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Mock ticket data
-  const [tickets, setTickets] = useState([
-    {
-      id: "TKT001",
-      subject: "Food quality issue",
-      description: "The food was cold when delivered and the taste was not up to the mark. I ordered chicken biryani but received a cold portion.",
-      customerName: "John Doe",
-      customerContact: "+91 9876543210",
-      vendorName: "Spice Paradise",
-      priority: "high",
-      status: "open",
-      timestamp: "2024-01-15 10:30:00",
-      category: "Quality"
+  const { data: tickets = [], isLoading: isLoadingTickets } = useQuery<Ticket[]>({
+    queryKey: ['tickets', selectedStatus, selectedOutlet, selectedDate],
+    queryFn: () => 
+      axiosInstance.get('/admin/tickets', {
+        params: {
+          status: selectedStatus === 'all' ? undefined : selectedStatus,
+          vendor: selectedOutlet === 'All Vendors' ? undefined : selectedOutlet,
+          date: selectedDate === 'all' ? undefined : selectedDate,
+        }
+      }).then(res => res.data),
+  });
+
+  const { data: counts, isLoading: isLoadingCounts } = useQuery<TicketCountsResponse>({
+    queryKey: ['ticketCounts'],
+    queryFn: () => axiosInstance.get('/admin/tickets/counts').then(res => res.data),
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, newStatus }: { id: string, newStatus: string }) => 
+      axiosInstance.put(`/admin/tickets/${id}/status`, null, { params: { newStatus } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['ticketCounts'] });
+      toast({ title: 'Success', description: 'Ticket status updated.' });
     },
-    {
-      id: "TKT002",
-      subject: "Late delivery",
-      description: "Order was delivered 45 minutes late. I had to wait and it affected my lunch break schedule.",
-      customerName: "Sarah Smith",
-      customerContact: "+91 9876543211",
-      vendorName: "Fast Corner",
-      priority: "medium",
-      status: "in-progress",
-      timestamp: "2024-01-14 14:15:00",
-      category: "Delivery"
-    },
-    {
-      id: "TKT003",
-      subject: "Wrong order received",
-      description: "I ordered a vegetarian burger but received a chicken burger instead. This is against my dietary preferences.",
-      customerName: "Mike Johnson",
-      customerContact: "+91 9876543212",
-      vendorName: "Healthy Bites",
-      priority: "low",
-      status: "resolved",
-      timestamp: "2024-01-13 12:45:00",
-      category: "Order"
-    },
-    {
-      id: "TKT004",
-      subject: "Unhygienic food packaging",
-      description: "The food container was dirty and there were spots on the packaging. Food safety is a concern.",
-      customerName: "Emily Davis",
-      customerContact: "+91 9876543213",
-      vendorName: "Cafe Delight",
-      priority: "high",
-      status: "open",
-      timestamp: "2024-01-16 09:20:00",
-      category: "Hygiene"
-    },
-    {
-      id: "TKT005",
-      subject: "Overcharged amount",
-      description: "I was charged ₹250 for an item that costs ₹180 according to the menu. Please check the billing.",
-      customerName: "Robert Wilson",
-      customerContact: "+91 9876543214",
-      vendorName: "Snack Hub",
-      priority: "medium",
-      status: "in-progress",
-      timestamp: "2024-01-15 16:00:00",
-      category: "Billing"
+    onError: () => {
+      toast({ title: 'Error', description: 'Failed to update ticket status.', variant: 'destructive' });
     }
-  ]);
+  });
 
+  const handleUpdateTicketStatus = (ticketId: string, newStatus: string) => {
+    updateStatusMutation.mutate({ id: ticketId, newStatus });
+  };
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'open': return 'destructive';
@@ -84,50 +80,6 @@ const TicketManagement = () => {
       default: return 'default';
     }
   };
-
-  const updateTicketStatus = (ticketId: string, newStatus: string) => {
-    setTickets(tickets.map(ticket => 
-      ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket
-    ));
-  };
-
-  const filteredTickets = tickets.filter(ticket => {
-    const matchesStatus = selectedStatus === 'all' || ticket.status === selectedStatus;
-    const matchesOutlet = selectedOutlet === 'All Vendors' || ticket.vendorName === selectedOutlet;
-    
-    let matchesDate = true;
-    if (selectedDate !== 'all') {
-      const ticketDate = new Date(ticket.timestamp);
-      const today = new Date();
-      
-      switch (selectedDate) {
-        case 'today':
-          matchesDate = ticketDate.toDateString() === today.toDateString();
-          break;
-        case 'week':
-          const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-          matchesDate = ticketDate >= weekAgo;
-          break;
-        case 'month':
-          const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-          matchesDate = ticketDate >= monthAgo;
-          break;
-      }
-    }
-    
-    return matchesStatus && matchesOutlet && matchesDate;
-  });
-
-  const getTicketCounts = () => {
-    return {
-      total: filteredTickets.length,
-      open: filteredTickets.filter(t => t.status === 'open').length,
-      inProgress: filteredTickets.filter(t => t.status === 'in-progress').length,
-      resolved: filteredTickets.filter(t => t.status === 'resolved').length
-    };
-  };
-
-  const counts = getTicketCounts();
 
   const outlets = ['All Vendors', 'Spice Paradise', 'Fast Corner', 'Healthy Bites', 'Cafe Delight', 'Snack Hub', 'Green Bowl', 'Pizza Point', 'Tea Time'];
 
@@ -141,61 +93,62 @@ const TicketManagement = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Total Tickets</p>
-                  <p className="text-2xl font-bold text-gray-800">{counts.total}</p>
-                </div>
-                <AlertTriangle className="w-8 h-8 text-gray-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Card className="hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Open Tickets</p>
-                  <p className="text-2xl font-bold text-red-600">{counts.open}</p>
-                </div>
-                <Flag className="w-8 h-8 text-red-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card className="hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">In Progress</p>
-                  <p className="text-2xl font-bold text-yellow-600">{counts.inProgress}</p>
-                </div>
-                <Clock className="w-8 h-8 text-yellow-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-          <Card className="hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Resolved</p>
-                  <p className="text-2xl font-bold text-green-600">{counts.resolved}</p>
-                </div>
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+        {isLoadingCounts ? Array.from({ length: 4 }).map((_, i) => <Card key={i}><CardContent className="p-6"><Skeleton className="h-16 w-full"/></CardContent></Card>) : (
+          <>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <Card className="hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Total Tickets</p>
+                      <p className="text-2xl font-bold text-gray-800">{counts?.total}</p>
+                    </div>
+                    <AlertTriangle className="w-8 h-8 text-gray-600" />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+              <Card className="hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Open Tickets</p>
+                      <p className="text-2xl font-bold text-red-600">{counts?.open}</p>
+                    </div>
+                    <Flag className="w-8 h-8 text-red-600" />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+              <Card className="hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">In Progress</p>
+                      <p className="text-2xl font-bold text-yellow-600">{counts?.inProgress}</p>
+                    </div>
+                    <Clock className="w-8 h-8 text-yellow-600" />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+              <Card className="hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Resolved</p>
+                      <p className="text-2xl font-bold text-green-600">{counts?.resolved}</p>
+                    </div>
+                    <CheckCircle className="w-8 h-8 text-green-600" />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </>
+        )}
       </div>
 
       {/* Filters */}
@@ -240,7 +193,7 @@ const TicketManagement = () => {
       {/* Tickets Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Tickets ({filteredTickets.length})</CardTitle>
+          <CardTitle>All Tickets ({isLoadingTickets ? '...' : tickets.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -257,7 +210,12 @@ const TicketManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredTickets.map((ticket) => (
+                {isLoadingTickets ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                        <tr key={i}><td colSpan={7} className="p-4"><Skeleton className="h-8 w-full"/></td></tr>
+                    ))
+                ) : (
+                tickets.map((ticket) => (
                   <motion.tr
                     key={ticket.id}
                     className="border-b hover:bg-gray-50"
@@ -304,7 +262,7 @@ const TicketManagement = () => {
                       </Button>
                     </td>
                   </motion.tr>
-                ))}
+                )))}
               </tbody>
             </table>
           </div>
@@ -369,30 +327,33 @@ const TicketManagement = () => {
                   <Button
                     variant={selectedTicket.status === 'open' ? 'default' : 'outline'}
                     onClick={() => {
-                      updateTicketStatus(selectedTicket.id, 'open');
+                      handleUpdateTicketStatus(selectedTicket.id, 'open');
                       setSelectedTicket({...selectedTicket, status: 'open'});
                     }}
                     className="flex-1"
+                    disabled={updateStatusMutation.isPending}
                   >
                     Open
                   </Button>
                   <Button
                     variant={selectedTicket.status === 'in-progress' ? 'default' : 'outline'}
                     onClick={() => {
-                      updateTicketStatus(selectedTicket.id, 'in-progress');
+                      handleUpdateTicketStatus(selectedTicket.id, 'in-progress');
                       setSelectedTicket({...selectedTicket, status: 'in-progress'});
                     }}
                     className="flex-1"
+                    disabled={updateStatusMutation.isPending}
                   >
                     In Progress
                   </Button>
                   <Button
                     variant={selectedTicket.status === 'resolved' ? 'default' : 'outline'}
                     onClick={() => {
-                      updateTicketStatus(selectedTicket.id, 'resolved');
+                      handleUpdateTicketStatus(selectedTicket.id, 'resolved');
                       setSelectedTicket({...selectedTicket, status: 'resolved'});
                     }}
                     className="flex-1"
+                    disabled={updateStatusMutation.isPending}
                   >
                     Resolved
                   </Button>

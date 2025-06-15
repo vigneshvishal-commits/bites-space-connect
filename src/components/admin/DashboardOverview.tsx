@@ -1,79 +1,44 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Store, ShoppingCart, DollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
+import { useQuery } from '@tanstack/react-query';
+import axiosInstance from '@/api/axiosInstance';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Inferred types from backend response
+interface DashboardSummary {
+  totalRevenue: number;
+  totalOrders: number;
+  totalVendors: number;
+  revenueChange: number;
+  ordersChange: number;
+  vendorsChange: number;
+}
+
+interface AnalyticsData {
+  revenueAndOrdersTrend: { month: string; revenue: number; orders: number }[];
+  vendorTypeDistribution: { name: string; value: number; color: string }[];
+  locationDistribution: { name: string; value: number; color: string }[];
+}
 
 const DashboardOverview = () => {
-  const [selectedVendor, setSelectedVendor] = useState('All Vendors');
+  const { data: summary, isLoading: isLoadingSummary } = useQuery<DashboardSummary>({
+    queryKey: ['dashboardSummary'],
+    queryFn: () => axiosInstance.get('/admin/dashboard/summary').then(res => res.data),
+  });
+
+  const { data: analytics, isLoading: isLoadingAnalytics } = useQuery<AnalyticsData>({
+    queryKey: ['dashboardAnalytics'],
+    queryFn: () => axiosInstance.get('/admin/dashboard/analytics').then(res => res.data),
+  });
 
   const stats = [
-    { title: 'Total Revenue', value: '₹2,45,890', change: '+15.3%', icon: DollarSign, color: 'text-green-600', bgColor: 'bg-green-100' },
-    { title: 'Total Orders', value: '1,847', change: '+12.5%', icon: ShoppingCart, color: 'text-blue-600', bgColor: 'bg-blue-100' },
-    { title: 'Total Vendors', value: '8', change: '+2', icon: Store, color: 'text-purple-600', bgColor: 'bg-purple-100' }
+    { title: 'Total Revenue', value: summary ? `₹${summary.totalRevenue.toLocaleString()}` : '0', change: summary ? `${summary.revenueChange >= 0 ? '+' : ''}${summary.revenueChange}%` : '+0%', icon: DollarSign, color: 'text-green-600', bgColor: 'bg-green-100' },
+    { title: 'Total Orders', value: summary ? summary.totalOrders.toLocaleString() : '0', change: summary ? `${summary.ordersChange >= 0 ? '+' : ''}${summary.ordersChange}%` : '+0%', icon: ShoppingCart, color: 'text-blue-600', bgColor: 'bg-blue-100' },
+    { title: 'Total Vendors', value: summary ? summary.totalVendors.toLocaleString() : '0', change: summary ? `${summary.vendorsChange >= 0 ? '+' : ''}${summary.vendorsChange}` : '+0', icon: Store, color: 'text-purple-600', bgColor: 'bg-purple-100' }
   ];
-
-  // All vendors trend data
-  const allVendorsData = [
-    { month: 'Jan', revenue: 25000, orders: 180 },
-    { month: 'Feb', revenue: 28000, orders: 220 },
-    { month: 'Mar', revenue: 32000, orders: 280 },
-    { month: 'Apr', revenue: 35000, orders: 320 },
-    { month: 'May', revenue: 42000, orders: 380 },
-    { month: 'Jun', revenue: 45890, orders: 420 }
-  ];
-
-  // Individual vendor data
-  const vendorSpecificData = {
-    'Spice Paradise': [
-      { month: 'Jan', revenue: 4500, orders: 32 },
-      { month: 'Feb', revenue: 5200, orders: 38 },
-      { month: 'Mar', revenue: 6100, orders: 45 },
-      { month: 'Apr', revenue: 6800, orders: 52 },
-      { month: 'May', revenue: 7200, orders: 58 },
-      { month: 'Jun', revenue: 8100, orders: 62 }
-    ],
-    'Healthy Bites': [
-      { month: 'Jan', revenue: 3200, orders: 28 },
-      { month: 'Feb', revenue: 3800, orders: 32 },
-      { month: 'Mar', revenue: 4200, orders: 38 },
-      { month: 'Apr', revenue: 4600, orders: 42 },
-      { month: 'May', revenue: 5100, orders: 46 },
-      { month: 'Jun', revenue: 5500, orders: 50 }
-    ],
-    'Fast Corner': [
-      { month: 'Jan', revenue: 3800, orders: 42 },
-      { month: 'Feb', revenue: 4200, orders: 48 },
-      { month: 'Mar', revenue: 4800, orders: 55 },
-      { month: 'Apr', revenue: 5200, orders: 62 },
-      { month: 'May', revenue: 5800, orders: 68 },
-      { month: 'Jun', revenue: 6200, orders: 72 }
-    ]
-  };
-
-  const getCurrentData = () => {
-    if (selectedVendor === 'All Vendors') {
-      return allVendorsData;
-    }
-    return vendorSpecificData[selectedVendor] || allVendorsData;
-  };
-
-  const vendorTypeData = [
-    { name: 'Healthy Food', value: 2, color: '#10b981' },
-    { name: 'Fast Food', value: 2, color: '#3b82f6' },
-    { name: 'Cafe & Beverages', value: 2, color: '#8b5cf6' },
-    { name: 'Multi Cuisine', value: 2, color: '#f59e0b' }
-  ];
-
-  const locationData = [
-    { name: 'SRZ SDB Floor 1 Wing A', value: 3, color: '#3b82f6' },
-    { name: 'SRZ SDB Floor 1 Wing B', value: 2, color: '#10b981' },
-    { name: 'SRZ SDB2 Floor 2 Wing A', value: 2, color: '#8b5cf6' },
-    { name: 'SRZ SDB1 Floor 2 Wing B', value: 1, color: '#f59e0b' }
-  ];
-
-  const vendors = ['All Vendors', 'Spice Paradise', 'Healthy Bites', 'Fast Corner', 'Cafe Delight', 'Snack Hub', 'Green Bowl', 'Pizza Point', 'Tea Time'];
 
   return (
     <div className="space-y-8">
@@ -94,32 +59,38 @@ const DashboardOverview = () => {
 
       {/* Main Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <motion.div
-              key={stat.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card className="hover:shadow-lg transition-all duration-300 transform hover:scale-105">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                      <p className="text-3xl font-bold text-gray-900 mt-1">{stat.value}</p>
-                      <p className="text-sm text-green-600 font-medium mt-1">{stat.change}</p>
+        {isLoadingSummary ? (
+          Array.from({ length: 3 }).map((_, index) => (
+            <Card key={index}><CardContent className="p-6"><Skeleton className="h-24 w-full" /></CardContent></Card>
+          ))
+        ) : (
+          stats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <motion.div
+                key={stat.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                        <p className="text-3xl font-bold text-gray-900 mt-1">{stat.value}</p>
+                        <p className="text-sm text-green-600 font-medium mt-1">{stat.change}</p>
+                      </div>
+                      <div className={`p-4 rounded-full ${stat.bgColor}`}>
+                        <Icon className={`w-8 h-8 ${stat.color}`} />
+                      </div>
                     </div>
-                    <div className={`p-4 rounded-full ${stat.bgColor}`}>
-                      <Icon className={`w-8 h-8 ${stat.color}`} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          );
-        })}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })
+        )}
       </div>
 
       {/* Revenue and Orders Trend - Full Width Chart */}
@@ -132,20 +103,12 @@ const DashboardOverview = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl font-semibold">Revenue & Orders Trend</CardTitle>
-              <select 
-                className="p-2 border rounded-md text-sm"
-                value={selectedVendor}
-                onChange={(e) => setSelectedVendor(e.target.value)}
-              >
-                {vendors.map(vendor => (
-                  <option key={vendor} value={vendor}>{vendor}</option>
-                ))}
-              </select>
             </div>
           </CardHeader>
           <CardContent>
+            {isLoadingAnalytics ? <Skeleton className="w-full h-[400px]" /> : (
             <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={getCurrentData()}>
+              <LineChart data={analytics?.revenueAndOrdersTrend || []}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
@@ -154,6 +117,7 @@ const DashboardOverview = () => {
                 <Line type="monotone" dataKey="orders" stroke="#10b981" strokeWidth={3} name="Orders" />
               </LineChart>
             </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
       </motion.div>
@@ -171,10 +135,11 @@ const DashboardOverview = () => {
               <CardTitle className="text-lg font-semibold">Distribution by Type</CardTitle>
             </CardHeader>
             <CardContent>
+              {isLoadingAnalytics ? <Skeleton className="w-full h-[300px]" /> : (
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={vendorTypeData}
+                    data={analytics?.vendorTypeDistribution || []}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -182,15 +147,16 @@ const DashboardOverview = () => {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {vendorTypeData.map((entry, index) => (
+                    {(analytics?.vendorTypeDistribution || []).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => [value, 'Count']} />
                 </PieChart>
               </ResponsiveContainer>
+              )}
               <div className="flex flex-wrap justify-center gap-2 mt-4">
-                {vendorTypeData.map((entry, index) => (
+                {(analytics?.vendorTypeDistribution || []).map((entry, index) => (
                   <div key={index} className="flex items-center space-x-1">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
                     <span className="text-xs text-gray-600">{entry.name} ({entry.value})</span>
@@ -212,8 +178,9 @@ const DashboardOverview = () => {
               <CardTitle className="text-lg font-semibold">Distribution by Location</CardTitle>
             </CardHeader>
             <CardContent>
+              {isLoadingAnalytics ? <Skeleton className="w-full h-[300px]" /> : (
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={locationData}>
+                <BarChart data={analytics?.locationDistribution || []}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
                     dataKey="name" 
@@ -222,11 +189,16 @@ const DashboardOverview = () => {
                   />
                   <YAxis domain={[0, 'dataMax']} tickCount={4} />
                   <Tooltip />
-                  <Bar dataKey="value" fill="#3b82f6" />
+                  <Bar dataKey="value" fill="#3b82f6" >
+                    {(analytics?.locationDistribution || []).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
+              )}
               <div className="flex flex-wrap justify-center gap-2 mt-4">
-                {locationData.map((entry, index) => (
+                {(analytics?.locationDistribution || []).map((entry, index) => (
                   <div key={index} className="flex items-center space-x-1">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
                     <span className="text-xs text-gray-600">{entry.name} ({entry.value})</span>

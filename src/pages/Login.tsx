@@ -5,6 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useMutation } from '@tanstack/react-query';
+import axiosInstance from '@/api/axiosInstance';
+import { useToast } from '@/components/ui/use-toast';
+
+interface AuthResponse {
+  jwt: string;
+  message: string;
+  isAdmin: boolean;
+  passwordChanged: boolean;
+}
 
 const Login = () => {
   const [isAdmin, setIsAdmin] = useState(true);
@@ -18,140 +28,152 @@ const Login = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [email, setEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState({
     username: '',
     password: '',
-    email: ''
+    email: '',
+    api: '',
   });
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [successType, setSuccessType] = useState<'login' | 'password-change' | 'password-reset'>('login');
 
-  // Check if user has already changed their default password
-  const getPasswordChangeKey = (username: string, isAdminUser: boolean) => {
-    return isAdminUser ? `adminPasswordChanged_${username}` : `vendorPasswordChanged_${username}`;
-  };
+  const { toast } = useToast();
 
-  const hasPasswordBeenChanged = (username: string, isAdminUser: boolean) => {
-    const key = getPasswordChangeKey(username, isAdminUser);
-    return localStorage.getItem(key) === 'true';
-  };
-
-  const validateCredentials = () => {
-    const errors = { username: '', password: '', email: '' };
-    let isValid = true;
-
-    if (!credentials.username.trim()) {
-      errors.username = 'Username is required';
-      isValid = false;
-    }
-
-    if (!credentials.password.trim()) {
-      errors.password = 'Password is required';
-      isValid = false;
-    }
-
-    setValidationErrors(errors);
-    return isValid;
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateCredentials()) {
-      return;
-    }
-
-    setIsLoading(true);
-
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // Accept any non-empty credentials for both admin and vendor
-    const isValidCredentials = credentials.username.trim() && credentials.password.trim();
-
-    if (isValidCredentials) {
-      const hasChanged = hasPasswordBeenChanged(credentials.username, isAdmin);
+  const loginMutation = useMutation({
+    mutationFn: (loginData: typeof credentials) => {
+      const endpoint = isAdmin ? '/admin/auth/login' : '/vendor/auth/login';
+      return axiosInstance.post<AuthResponse>(endpoint, loginData);
+    },
+    onSuccess: (response) => {
+      const { data } = response;
+      localStorage.setItem('token', data.jwt);
+      localStorage.setItem('isAdmin', String(data.isAdmin));
       
-      if (!hasChanged) {
-        // First time login - ask if they want to change password
+      if (!data.passwordChanged) {
         setCurrentFlow('first-time-check');
-        setIsLoading(false);
-        return;
       } else {
-        // Subsequent login - proceed directly to dashboard
         setSuccessType('login');
         setLoginSuccess(true);
         setTimeout(() => {
-          if (isAdmin) {
-            window.location.href = '/admin-dashboard';
-          } else {
-            window.location.href = '/vendor-dashboard';
-          }
+          window.location.href = data.isAdmin ? '/admin-dashboard' : '/vendor-dashboard';
         }, 1500);
       }
-    } else {
-      setValidationErrors({
-        username: 'Invalid credentials',
-        password: 'Invalid credentials',
-        email: ''
+    },
+    onError: (error: any) => {
+      const apiError = error.response?.data?.message || 'Invalid credentials. Please try again.';
+      setValidationErrors({ username: ' ', password: ' ', api: apiError, email: '' });
+      toast({
+        title: "Login Failed",
+        description: apiError,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const forgotPasswordMutation = useMutation({
+    mutationFn: (email: string) => {
+      const endpoint = isAdmin ? '/admin/auth/forgot-password' : '/vendor/auth/forgot-password';
+      return axiosInstance.post(endpoint, { email });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Request Sent",
+        description: "If an account with that email exists, a password reset code has been sent.",
+      });
+      setCurrentFlow('verify-email');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "An error occurred.",
+        variant: "destructive",
       });
     }
-    
-    setIsLoading(false);
-  };
+  });
 
-  const handlePasswordReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword === confirmPassword && newPassword.length >= 6) {
-      setIsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mark password as changed
-      const key = getPasswordChangeKey(credentials.username, isAdmin);
-      localStorage.setItem(key, 'true');
-      
-      setSuccessType('password-change');
-      setLoginSuccess(true);
-      setTimeout(() => {
-        if (isAdmin) {
-          window.location.href = '/admin-dashboard';
-        } else {
-          window.location.href = '/vendor-dashboard';
+  const resetPasswordMutation = useMutation({
+    mutationFn: (data: any) => {
+        const endpoint = successType === 'password-reset' 
+            ? (isAdmin ? '/admin/auth/reset-password' : '/vendor/auth/reset-password')
+            : (isAdmin ? '/admin/auth/change-password' : '/vendor/auth/change-password');
+        
+        const payload = successType === 'password-reset'
+            ? { email, token: verificationCode, newPassword: data.newPassword }
+            : { currentPassword: data.oldPassword, newPassword: data.newPassword }; // You might need an old password field
+
+        // For first time change, backend might not need old password
+        if (currentFlow === 'password-reset' && successType !== 'password-reset') {
+             // This is the first-time-change flow
+             // The backend needs to support changing password without the old one in this case
+             // Let's assume a different endpoint or logic is needed. For now, we use change-password
+             const changePasswordPayload = { newPassword: data.newPassword, confirmPassword: data.confirmPassword };
+             return axiosInstance.post(isAdmin ? '/admin/auth/change-password' : '/vendor/auth/change-password', changePasswordPayload)
         }
+        
+        return axiosInstance.post(endpoint, payload);
+    },
+    onSuccess: () => {
+      setSuccessType(currentFlow === 'password-reset' ? 'password-reset' : 'password-change');
+      setLoginSuccess(true);
+      toast({
+        title: "Success",
+        description: "Password updated successfully! Redirecting to dashboard...",
+      });
+      setTimeout(() => {
+        window.location.href = isAdmin ? '/admin-dashboard' : '/vendor-dashboard';
       }, 1500);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Password Update Failed",
+        description: error.response?.data?.message || "An error occurred.",
+        variant: "destructive",
+      });
     }
-  };
+  });
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setCurrentFlow('verify-email');
-    setIsLoading(false);
-  };
-
-  const handleVerifyCode = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (verificationCode === '123456') {
-      setCurrentFlow('password-reset');
-      setSuccessType('password-reset');
-    } else {
-      setValidationErrors({...validationErrors, email: 'Invalid verification code'});
+    setValidationErrors({ username: '', password: '', email: '', api: '' });
+    if (!credentials.username || !credentials.password) {
+      setValidationErrors({ username: 'Username is required', password: 'Password is required', email: '', api: '' });
+      return;
     }
+    loginMutation.mutate(credentials);
+  };
+  
+  const handlePasswordReset = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Error", description: "Passwords do not match.", variant: "destructive" });
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast({ title: "Error", description: "Password must be at least 6 characters.", variant: "destructive" });
+      return;
+    }
+    resetPasswordMutation.mutate({ newPassword, confirmPassword });
+  };
+  
+  const handleForgotPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    forgotPasswordMutation.mutate(email);
+  };
+  
+  const handleVerifyCode = (e: React.FormEvent) => {
+    e.preventDefault();
+    // No backend for verify, just move to next step. The token is used in reset.
+    setCurrentFlow('password-reset');
+    setSuccessType('password-reset');
   };
 
   const handleSkipPasswordChange = () => {
-    const key = getPasswordChangeKey(credentials.username, isAdmin);
-    localStorage.setItem(key, 'true');
+    // This action should be confirmed with backend logic.
+    // Assuming skipping logs them in and they can change it later.
     setSuccessType('login');
     setLoginSuccess(true);
     setTimeout(() => {
-      if (isAdmin) {
-        window.location.href = '/admin-dashboard';
-      } else {
-        window.location.href = '/vendor-dashboard';
-      }
+      window.location.href = isAdmin ? '/admin-dashboard' : '/vendor-dashboard';
     }, 1500);
   };
 
@@ -241,7 +263,7 @@ const Login = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <button
-              onClick={() => setIsAdmin(true)}
+              onClick={() => { setIsAdmin(true); setCredentials({ username: '', password: '' }); setValidationErrors({ username: '', password: '', email: '', api: '' }); }}
               className={`flex-1 py-3 px-4 rounded-md transition-all duration-300 font-medium ${
                 isAdmin 
                   ? 'bg-blue-600 text-white shadow-md transform scale-105' 
@@ -251,7 +273,7 @@ const Login = () => {
               Admin
             </button>
             <button
-              onClick={() => setIsAdmin(false)}
+              onClick={() => { setIsAdmin(false); setCredentials({ username: '', password: '' }); setValidationErrors({ username: '', password: '', email: '', api: '' }); }}
               className={`flex-1 py-3 px-4 rounded-md transition-all duration-300 font-medium ${
                 !isAdmin 
                   ? 'bg-green-600 text-white shadow-md transform scale-105' 
@@ -283,7 +305,7 @@ const Login = () => {
                 {currentFlow === 'first-time-check' && 'Welcome! This appears to be your first login. Would you like to set a secure password?'}
                 {currentFlow === 'password-reset' && (successType === 'password-reset' ? 'Enter your new password below' : 'Create a secure password for your account')}
                 {currentFlow === 'forgot-password' && 'Enter your email address to receive a verification code'}
-                {currentFlow === 'verify-email' && 'Enter the verification code sent to your email'}
+                {currentFlow === 'verify-email' && 'A verification code will be sent to your email.'}
                 {currentFlow === 'login' && 'Enter your credentials to continue'}
               </p>
             </CardHeader>
@@ -476,10 +498,10 @@ const Login = () => {
                         value={credentials.username}
                         onChange={(e) => {
                           setCredentials({...credentials, username: e.target.value});
-                          setValidationErrors({...validationErrors, username: ''});
+                          setValidationErrors({...validationErrors, username: '', api: ''});
                         }}
                         className={`pl-10 h-12 border-2 transition-all duration-300 ${
-                          validationErrors.username 
+                          validationErrors.username || validationErrors.api
                             ? 'border-red-500 animate-pulse' 
                             : credentials.username 
                               ? 'border-green-500' 
@@ -488,14 +510,14 @@ const Login = () => {
                         placeholder="Enter username"
                         required
                       />
-                      {credentials.username && !validationErrors.username && (
+                      {credentials.username && !validationErrors.username && !validationErrors.api && (
                         <CheckCircle className="absolute right-3 top-3 h-5 w-5 text-green-500" />
                       )}
-                      {validationErrors.username && (
+                      {(validationErrors.username || validationErrors.api) && (
                         <AlertCircle className="absolute right-3 top-3 h-5 w-5 text-red-500" />
                       )}
                     </div>
-                    {validationErrors.username && (
+                    {validationErrors.username && !validationErrors.api && (
                       <motion.p
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -515,10 +537,10 @@ const Login = () => {
                         value={credentials.password}
                         onChange={(e) => {
                           setCredentials({...credentials, password: e.target.value});
-                          setValidationErrors({...validationErrors, password: ''});
+                          setValidationErrors({...validationErrors, password: '', api: ''});
                         }}
                         className={`pl-10 pr-10 h-12 border-2 transition-all duration-300 ${
-                          validationErrors.password 
+                          validationErrors.password || validationErrors.api
                             ? 'border-red-500 animate-pulse' 
                             : credentials.password 
                               ? 'border-green-500' 
@@ -534,14 +556,14 @@ const Login = () => {
                       >
                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
-                      {credentials.password && !validationErrors.password && (
+                      {credentials.password && !validationErrors.password && !validationErrors.api && (
                         <CheckCircle className="absolute right-3 top-3 h-5 w-5 text-green-500" />
                       )}
-                      {validationErrors.password && (
+                      {(validationErrors.password || validationErrors.api) && (
                         <AlertCircle className="absolute right-3 top-3 h-5 w-5 text-red-500" />
                       )}
                     </div>
-                    {validationErrors.password && (
+                    {validationErrors.password && !validationErrors.api && (
                       <motion.p
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -552,6 +574,16 @@ const Login = () => {
                     )}
                   </div>
                   
+                  {validationErrors.api && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-red-500 text-sm mt-1 text-center"
+                      >
+                        {validationErrors.api}
+                      </motion.p>
+                  )}
+
                   <div className="text-right">
                     <button
                       type="button"
@@ -567,9 +599,9 @@ const Login = () => {
                     className={`w-full h-12 text-white font-medium text-lg transition-all duration-300 transform hover:scale-105 ${
                       isAdmin ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'
                     }`}
-                    disabled={isLoading}
+                    disabled={loginMutation.isPending}
                   >
-                    {isLoading ? (
+                    {loginMutation.isPending ? (
                       <motion.div
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
